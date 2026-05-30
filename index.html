@@ -2,12 +2,12 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>단어 타자 연습</title>
+    <title>단어 타자 연습 (타수 모드)</title>
     <style>
         body { font-family: 'Arial', sans-serif; text-align: center; padding: 50px; background: #f0f2f5; }
-        #word-display { font-size: 48px; font-weight: bold; margin: 30px; color: #333; }
+        #word-display { font-size: 60px; font-weight: bold; margin: 30px; color: #333; }
         #input-area { font-size: 24px; padding: 10px; width: 300px; text-align: center; }
-        .score { font-size: 20px; margin-top: 20px; }
+        .info { font-size: 20px; margin-top: 20px; color: #555; }
     </style>
 </head>
 <body>
@@ -16,7 +16,9 @@
     <div id="word-display">준비</div>
     <input type="text" id="input-area" placeholder="단어를 입력하세요" autocomplete="off" autofocus>
     
-    <div class="score">점수: <span id="score">0</span></div>
+    <div class="info">
+        점수: <span id="score">0</span> | 타수: <span id="cpm">0</span> CPM
+    </div>
 
     <div style="margin-top: 30px;">
         <button onclick="setLanguage('ko')">한국어</button>
@@ -29,33 +31,43 @@
             en: ["apple", "banana", "computer", "coding", "sky", "sea", "car", "teacher"]
         };
 
-        let lang = 'ko', score = 0;
+        let lang = 'ko', score = 0, startTime = Date.now(), totalChars = 0;
         const display = document.getElementById('word-display');
         const input = document.getElementById('input-area');
         const scoreDisp = document.getElementById('score');
+        const cpmDisp = document.getElementById('cpm');
 
-        function setLanguage(l) {
-            lang = l;
-            score = 0;
-            scoreDisp.innerText = score;
-            nextWord();
-        }
+        function setLanguage(l) { lang = l; score = 0; totalChars = 0; startTime = Date.now(); scoreDisp.innerText = score; nextWord(); }
 
         function nextWord() {
-            const list = words[lang];
-            display.innerText = list[Math.floor(Math.random() * list.length)];
+            display.innerText = words[lang][Math.floor(Math.random() * words[lang].length)];
             input.value = "";
         }
 
         input.addEventListener('input', () => {
-            if (input.value === display.innerText) {
+            const currentVal = input.value;
+            const target = display.innerText;
+
+            // 1. 오타 발생 시: 즉시 새로운 단어로 변경
+            if (!target.startsWith(currentVal)) {
+                nextWord();
+                return;
+            }
+
+            // 2. 단어 성공 시: 점수 증가 및 타수 계산
+            if (currentVal === target) {
                 score++;
+                totalChars += target.length;
                 scoreDisp.innerText = score;
+                
+                // 타수 계산 (분당 문자 수)
+                const timeElapsed = (Date.now() - startTime) / 60000;
+                cpmDisp.innerText = Math.round(totalChars / timeElapsed);
+                
                 nextWord();
             }
         });
 
-        // 시작 시 초기화
         nextWord();
     </script>
 </body>
