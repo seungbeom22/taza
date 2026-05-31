@@ -2,71 +2,372 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>단어 타자 연습 (타수 모드)</title>
+    <title>단어 타자 연습</title>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Arial', sans-serif; text-align: center; padding: 50px; background: #f0f2f5; }
-        #word-display { font-size: 60px; font-weight: bold; margin: 30px; color: #333; }
-        #input-area { font-size: 24px; padding: 10px; width: 300px; text-align: center; }
-        .info { font-size: 20px; margin-top: 20px; color: #555; }
+        :root {
+            --bg: #0d0f14;
+            --surface: #161a24;
+            --border: #252a38;
+            --accent: #4fffb0;
+            --accent2: #ff4f7b;
+            --text: #e8eaf0;
+            --muted: #5a607a;
+            --word-color: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: -20%;
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(79,255,176,0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 28px;
+            letter-spacing: 4px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        /* Stats bar */
+        .stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 24px;
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 28px;
+            color: var(--accent);
+        }
+
+        .stat-value.timer { color: #ffd166; }
+        .stat-value.cpm   { color: #74b9ff; }
+
+        /* Word display */
+        .word-container {
+            position: relative;
+            margin: 20px 0 36px;
+        }
+
+        #word-display {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 72px;
+            color: var(--word-color);
+            letter-spacing: 6px;
+            text-shadow: 0 0 40px rgba(79,255,176,0.15);
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.12s ease;
+        }
+
+        #word-display.shake {
+            animation: shake 0.25s ease;
+        }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.12); color: var(--accent); }
+            100% { transform: scale(1); }
+        }
+
+        #word-display.pop {
+            animation: pop 0.25s ease;
+        }
+
+        /* Progress bar under the word */
+        .progress-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+
+        /* Input */
+        #input-area {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 26px;
+            padding: 14px 28px;
+            width: 360px;
+            text-align: center;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+            caret-color: var(--accent);
+        }
+
+        #input-area:focus { border-color: var(--accent); }
+        #input-area.error { border-color: var(--accent2); background: rgba(255,79,123,0.06); }
+
+        /* Lang buttons */
+        .lang-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .lang-btn {
+            padding: 10px 28px;
+            border-radius: 30px;
+            border: 2px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(79,255,176,0.07);
+        }
+
+        /* Score pop feedback */
+        .feedback {
+            position: fixed;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 36px;
+            color: var(--accent);
+            pointer-events: none;
+            animation: floatUp 0.7s ease forwards;
+        }
+
+        @keyframes floatUp {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+        }
     </style>
 </head>
 <body>
 
-    <h1>단어 타자 연습</h1>
-    <div id="word-display">준비</div>
-    <input type="text" id="input-area" placeholder="단어를 입력하세요" autocomplete="off" autofocus>
-    
-    <div class="info">
-        점수: <span id="score">0</span> | 타수: <span id="cpm">0</span> CPM
+    <h1>타자 연습</h1>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-label">점수</div>
+            <div class="stat-value" id="score">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">시간</div>
+            <div class="stat-value timer" id="timer">0s</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">타수 (CPM)</div>
+            <div class="stat-value cpm" id="cpm">0</div>
+        </div>
     </div>
 
-    <div style="margin-top: 30px;">
-        <button onclick="setLanguage('ko')">한국어</button>
-        <button onclick="setLanguage('en')">English</button>
+    <div class="word-container">
+        <div id="word-display">준비</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <input type="text" id="input-area" placeholder="단어를 입력하세요" autocomplete="off" autofocus>
+
+    <div class="lang-buttons">
+        <button class="lang-btn active" onclick="setLanguage('ko')">한국어</button>
+        <button class="lang-btn" onclick="setLanguage('en')">English</button>
     </div>
 
     <script>
         const words = {
-            ko: ["사과", "바나나", "컴퓨터", "코딩", "하늘", "바다", "자동차", "선생님"],
-            en: ["apple", "banana", "computer", "coding", "sky", "sea", "car", "teacher"]
+            ko: ["사과", "바나나", "컴퓨터", "코딩", "하늘", "바다", "자동차", "선생님", "강아지", "고양이", "학교", "도서관"],
+            en: ["apple", "banana", "computer", "coding", "sky", "sea", "car", "teacher", "dog", "cat", "school", "library"]
         };
 
-        let lang = 'ko', score = 0, startTime = Date.now(), totalChars = 0;
-        const display = document.getElementById('word-display');
-        const input = document.getElementById('input-area');
+        let lang = 'ko';
+        let score = 0;
+        let startTime = null;
+        let totalChars = 0;
+        let isComposing = false; // 한글 조합 중 여부
+        let timerInterval = null;
+
+        const display   = document.getElementById('word-display');
+        const input     = document.getElementById('input-area');
         const scoreDisp = document.getElementById('score');
-        const cpmDisp = document.getElementById('cpm');
+        const cpmDisp   = document.getElementById('cpm');
+        const timerDisp = document.getElementById('timer');
+        const progressFill = document.getElementById('progress-fill');
 
-        function setLanguage(l) { lang = l; score = 0; totalChars = 0; startTime = Date.now(); scoreDisp.innerText = score; nextWord(); }
-
-        function nextWord() {
-            display.innerText = words[lang][Math.floor(Math.random() * words[lang].length)];
-            input.value = "";
+        // ── 타이머 ──────────────────────────────
+        function startTimer() {
+            if (timerInterval) return;
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const secs = Math.floor((Date.now() - startTime) / 1000);
+                timerDisp.innerText = secs + 's';
+            }, 500);
         }
 
-        input.addEventListener('input', () => {
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            startTime = null;
+            timerDisp.innerText = '0s';
+        }
+
+        // ── 다음 단어 ────────────────────────────
+        function nextWord() {
+            const list = words[lang];
+            display.innerText = list[Math.floor(Math.random() * list.length)];
+            input.value = '';
+            input.classList.remove('error');
+            progressFill.style.width = '100%';
+        }
+
+        // ── 언어 변경 ────────────────────────────
+        function setLanguage(l) {
+            lang = l;
+            score = 0; totalChars = 0;
+            scoreDisp.innerText = 0;
+            cpmDisp.innerText = 0;
+            resetTimer();
+            document.querySelectorAll('.lang-btn').forEach((b, i) => {
+                b.classList.toggle('active', (i === 0 && l === 'ko') || (i === 1 && l === 'en'));
+            });
+            nextWord();
+            input.focus();
+        }
+
+        // ── 한글 조합 이벤트 ─────────────────────
+        input.addEventListener('compositionstart', () => { isComposing = true; });
+        input.addEventListener('compositionend',   () => {
+            isComposing = false;
+            checkInput(); // 조합 완료 후 한 번 체크
+        });
+
+        // ── 입력 체크 ────────────────────────────
+        function checkInput() {
+            // 조합 중이면 검사하지 않음 (한글 오타 방지 핵심!)
+            if (isComposing) return;
+
             const currentVal = input.value;
+            if (!currentVal) return;
+
+            // 타이머 시작 (첫 입력 시)
+            if (!startTime) startTimer();
+
             const target = display.innerText;
 
-            // 1. 오타 발생 시: 즉시 새로운 단어로 변경
+            // 진행률 표시
+            const matchLen = [...currentVal].filter((c, i) => c === [...target][i]).length;
+            progressFill.style.width = (matchLen / target.length * 100) + '%';
+
+            // 오타 감지: 입력값이 target의 앞부분과 맞지 않으면
             if (!target.startsWith(currentVal)) {
-                nextWord();
+                input.classList.add('error');
+                display.classList.remove('shake');
+                void display.offsetWidth; // reflow
+                display.classList.add('shake');
+                // 오타 시 단어를 바꾸지 않고 입력만 초기화
+                setTimeout(() => {
+                    input.value = '';
+                    input.classList.remove('error');
+                    progressFill.style.width = '100%';
+                }, 300);
                 return;
             }
 
-            // 2. 단어 성공 시: 점수 증가 및 타수 계산
+            input.classList.remove('error');
+
+            // 단어 완성
             if (currentVal === target) {
                 score++;
                 totalChars += target.length;
                 scoreDisp.innerText = score;
-                
-                // 타수 계산 (분당 문자 수)
-                const timeElapsed = (Date.now() - startTime) / 60000;
-                cpmDisp.innerText = Math.round(totalChars / timeElapsed);
-                
+
+                // CPM 계산
+                const mins = (Date.now() - startTime) / 60000;
+                cpmDisp.innerText = Math.round(totalChars / mins);
+
+                // 팝 애니메이션
+                display.classList.remove('pop');
+                void display.offsetWidth;
+                display.classList.add('pop');
+
+                // +1 float 효과
+                spawnFeedback();
+
                 nextWord();
             }
-        });
+        }
+
+        input.addEventListener('input', checkInput);
+
+        // ── +1 시각 피드백 ───────────────────────
+        function spawnFeedback() {
+            const el = document.createElement('div');
+            el.className = 'feedback';
+            el.textContent = '+1';
+            const rect = display.getBoundingClientRect();
+            el.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+            el.style.top  = (rect.top - 10) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 700);
+        }
 
         nextWord();
     </script>
