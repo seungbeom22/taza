@@ -2,18 +2,29 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>단어 타자 연습</title>
-    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>타자 연습</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gugi&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0d0f14;
-            --surface: #161a24;
-            --border: #252a38;
-            --accent: #4fffb0;
-            --accent2: #ff4f7b;
-            --text: #e8eaf0;
-            --muted: #5a607a;
-            --word-color: #ffffff;
+            --bg: #e8f4fd;
+            --bg2: #daeef9;
+            --surface: #ffffff;
+            --surface2: #f0f8fe;
+            --border: #b8ddf0;
+            --border2: #cce8f5;
+            --accent: #1a8fc4;
+            --accent2: #e85d7b;
+            --accent3: #2eb87e;
+            --text: #1a2a3a;
+            --text2: #3a5570;
+            --muted: #7aabb8;
+            --shadow: rgba(26,143,196,0.12);
+            --shadow2: rgba(26,143,196,0.22);
+            --word-active: #0d6fa0;
+            --word-done: #a8d4e8;
+            --word-next: #5ba8c8;
+            --word-far: #9ec9de;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,350 +37,792 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            overflow: hidden;
+            justify-content: flex-start;
+            padding: 36px 40px 60px;
+            background-image:
+                radial-gradient(ellipse at 15% 20%, rgba(100,200,255,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 80%, rgba(26,143,196,0.1) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231a8fc4' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: -40%;
-            left: -20%;
-            width: 80vw;
-            height: 80vw;
-            background: radial-gradient(circle, rgba(79,255,176,0.04) 0%, transparent 70%);
-            pointer-events: none;
+        /* ── 헤더 ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 32px;
         }
 
         h1 {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 28px;
-            letter-spacing: 4px;
+            font-family: 'Gugi', cursive;
+            font-size: 26px;
+            letter-spacing: 3px;
             color: var(--accent);
-            text-transform: uppercase;
-            margin-bottom: 40px;
-            opacity: 0.9;
         }
 
-        /* Stats bar */
+        h1 span {
+            color: var(--text2);
+            font-size: 14px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-left: 14px;
+        }
+
+        /* ── 모드·언어 선택 ── */
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .ctrl-btn {
+            padding: 8px 18px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+
+        .ctrl-btn:hover { color: var(--accent); background: var(--surface2); }
+        .ctrl-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .divider-v {
+            width: 1.5px;
+            background: var(--border);
+        }
+
+        /* ── 스탯 바 ── */
         .stats {
             display: flex;
-            gap: 24px;
-            margin-bottom: 40px;
+            gap: 16px;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 28px;
         }
 
         .stat-box {
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px 24px;
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 28px;
             text-align: center;
-            min-width: 110px;
+            flex: 1;
+            box-shadow: 0 2px 12px var(--shadow);
+            transition: transform 0.15s;
         }
 
+        .stat-box:hover { transform: translateY(-2px); }
+
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             letter-spacing: 2px;
             color: var(--muted);
             text-transform: uppercase;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .stat-value {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 30px;
+            font-weight: 700;
             color: var(--accent);
         }
 
-        .stat-value.timer { color: #ffd166; }
-        .stat-value.cpm   { color: #74b9ff; }
+        .stat-value.timer { color: #e07b2a; }
+        .stat-value.cpm   { color: #2eb87e; }
+        .stat-value.acc   { color: #9b5de5; }
 
-        /* Word display */
-        .word-container {
-            position: relative;
-            margin: 20px 0 36px;
+        /* ── 낱말 모드 레인 ── */
+        #word-mode {
+            width: 100%;
+            max-width: 1100px;
         }
 
-        #word-display {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 72px;
-            color: var(--word-color);
-            letter-spacing: 6px;
-            text-shadow: 0 0 40px rgba(79,255,176,0.15);
-            min-height: 90px;
+        .word-lane {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 18px;
+            padding: 36px 48px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 24px var(--shadow);
+            min-height: 140px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.12s ease;
+            overflow: hidden;
+            position: relative;
         }
 
-        #word-display.shake {
-            animation: shake 0.25s ease;
+        .word-lane::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #74d0f0, var(--accent));
+            border-radius: 18px 18px 0 0;
         }
 
-        @keyframes shake {
-            0%,100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+        /* 단어 큐 */
+        .word-queue {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            flex-wrap: nowrap;
+            justify-content: center;
         }
 
-        @keyframes pop {
+        .wq-item {
+            font-family: 'Gugi', cursive;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .wq-item.done {
+            font-size: 28px;
+            color: var(--word-done);
+            opacity: 0.5;
+            transform: scale(0.85);
+        }
+
+        .wq-item.active {
+            font-size: 72px;
+            color: var(--word-active);
+            text-shadow: 0 2px 16px rgba(26,143,196,0.2);
+        }
+
+        .wq-item.active.error {
+            color: var(--accent2);
+            text-shadow: 0 0 20px rgba(232,93,123,0.3);
+            animation: shakeWord 0.22s ease;
+        }
+
+        .wq-item.next1 {
+            font-size: 44px;
+            color: var(--word-next);
+            opacity: 0.7;
+        }
+
+        .wq-item.next2 {
+            font-size: 30px;
+            color: var(--word-far);
+            opacity: 0.45;
+        }
+
+        .wq-item.next3 {
+            font-size: 22px;
+            color: var(--word-far);
+            opacity: 0.28;
+        }
+
+        @keyframes shakeWord {
+            0%,100% { transform: translateX(0) scale(1.05); }
+            25% { transform: translateX(-10px) scale(1.05); }
+            75% { transform: translateX(10px) scale(1.05); }
+        }
+
+        @keyframes wordPop {
             0% { transform: scale(1); }
-            50% { transform: scale(1.12); color: var(--accent); }
+            40% { transform: scale(1.1); color: var(--accent3); }
             100% { transform: scale(1); }
         }
 
-        #word-display.pop {
-            animation: pop 0.25s ease;
+        .wq-item.pop {
+            animation: wordPop 0.28s ease;
         }
 
-        /* Progress bar under the word */
-        .progress-bar {
-            height: 3px;
-            background: var(--border);
-            border-radius: 2px;
-            margin-top: 12px;
+        /* 진행바 */
+        .progress-track {
+            height: 4px;
+            background: var(--border2);
+            border-radius: 4px;
+            margin-bottom: 18px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: var(--accent);
-            border-radius: 2px;
+            background: linear-gradient(90deg, var(--accent), #74d0f0);
+            border-radius: 4px;
             transition: width 0.1s linear;
-            width: 100%;
         }
 
-        /* Input */
-        #input-area {
+        /* ── 장문 모드 ── */
+        #para-mode {
+            width: 100%;
+            max-width: 1100px;
+            display: none;
+        }
+
+        .para-display-box {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 18px;
+            padding: 36px 52px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 24px var(--shadow);
+            position: relative;
+            min-height: 120px;
+        }
+
+        .para-display-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2eb87e, #74d0f0, #9b5de5);
+            border-radius: 18px 18px 0 0;
+        }
+
+        #para-text {
             font-family: 'Noto Sans KR', sans-serif;
-            font-size: 26px;
-            padding: 14px 28px;
-            width: 360px;
-            text-align: center;
+            font-size: 28px;
+            line-height: 1.9;
+            letter-spacing: 2px;
+            color: var(--text2);
+            word-break: keep-all;
+        }
+
+        #para-text .char-done  { color: var(--accent3); }
+        #para-text .char-error { color: var(--accent2); background: rgba(232,93,123,0.12); border-radius: 2px; }
+        #para-text .char-cursor { border-left: 2px solid var(--accent); animation: blink 0.9s step-end infinite; }
+        #para-text .char-pending { color: var(--muted); opacity: 0.55; }
+
+        @keyframes blink { 50% { border-color: transparent; } }
+
+        /* ── 입력창 ── */
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        #input-area {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            padding: 18px 32px;
+            width: 100%;
             background: var(--surface);
             border: 2px solid var(--border);
             border-radius: 14px;
             color: var(--text);
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
             caret-color: var(--accent);
+            box-shadow: 0 2px 12px var(--shadow);
+            letter-spacing: 1px;
         }
 
-        #input-area:focus { border-color: var(--accent); }
-        #input-area.error { border-color: var(--accent2); background: rgba(255,79,123,0.06); }
-
-        /* Lang buttons */
-        .lang-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 32px;
+        #input-area:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(26,143,196,0.12);
         }
 
-        .lang-btn {
-            padding: 10px 28px;
-            border-radius: 30px;
-            border: 2px solid var(--border);
-            background: transparent;
+        #input-area.error {
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 4px rgba(232,93,123,0.1);
+            background: #fff5f7;
+        }
+
+        .input-hint {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
             color: var(--muted);
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
+            letter-spacing: 1px;
+            pointer-events: none;
         }
 
-        .lang-btn:hover, .lang-btn.active {
+        /* ── 리셋 버튼 ── */
+        .reset-row {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 16px;
+            gap: 10px;
+        }
+
+        .reset-btn {
+            padding: 9px 24px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text2);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.18s;
+            box-shadow: 0 1px 6px var(--shadow);
+        }
+
+        .reset-btn:hover {
             border-color: var(--accent);
             color: var(--accent);
-            background: rgba(79,255,176,0.07);
+            background: var(--surface2);
         }
 
-        /* Score pop feedback */
+        /* ── +1 피드백 ── */
         .feedback {
             position: fixed;
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 36px;
-            color: var(--accent);
+            font-family: 'Gugi', cursive;
+            font-size: 28px;
+            color: var(--accent3);
             pointer-events: none;
-            animation: floatUp 0.7s ease forwards;
+            animation: floatUp 0.65s ease forwards;
+            z-index: 9999;
         }
 
         @keyframes floatUp {
             0%   { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.25); }
+        }
+
+        /* ── 구분선 ── */
+        .sep {
+            width: 1.5px;
+            height: 22px;
+            background: var(--border);
+            margin: 0 4px;
         }
     </style>
 </head>
 <body>
 
-    <h1>타자 연습</h1>
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>타자 연습 <span>TYPING TRAINER</span></h1>
+        <div class="controls">
+            <div class="btn-group">
+                <button class="ctrl-btn active" id="btn-word" onclick="setGameMode('word')">낱말</button>
+                <div class="divider-v"></div>
+                <button class="ctrl-btn" id="btn-para" onclick="setGameMode('para')">장문</button>
+            </div>
+            <div class="sep"></div>
+            <div class="btn-group">
+                <button class="ctrl-btn active" id="btn-ko" onclick="setLanguage('ko')">한국어</button>
+                <div class="divider-v"></div>
+                <button class="ctrl-btn" id="btn-en" onclick="setLanguage('en')">English</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- 스탯 -->
     <div class="stats">
         <div class="stat-box">
             <div class="stat-label">점수</div>
             <div class="stat-value" id="score">0</div>
         </div>
         <div class="stat-box">
-            <div class="stat-label">시간</div>
+            <div class="stat-label">경과 시간</div>
             <div class="stat-value timer" id="timer">0s</div>
         </div>
         <div class="stat-box">
             <div class="stat-label">타수 (CPM)</div>
             <div class="stat-value cpm" id="cpm">0</div>
         </div>
+        <div class="stat-box">
+            <div class="stat-label">정확도</div>
+            <div class="stat-value acc" id="accuracy">—</div>
+        </div>
     </div>
 
-    <div class="word-container">
-        <div id="word-display">준비</div>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <!-- 낱말 모드 -->
+    <div id="word-mode">
+        <div class="word-lane">
+            <div class="word-queue" id="word-queue"></div>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progress-fill" style="width:100%"></div>
+        </div>
     </div>
 
-    <input type="text" id="input-area" placeholder="단어를 입력하세요" autocomplete="off" autofocus>
-
-    <div class="lang-buttons">
-        <button class="lang-btn active" onclick="setLanguage('ko')">한국어</button>
-        <button class="lang-btn" onclick="setLanguage('en')">English</button>
+    <!-- 장문 모드 -->
+    <div id="para-mode">
+        <div class="para-display-box">
+            <div id="para-text"></div>
+        </div>
     </div>
 
-    <script>
-        const words = {
-            ko: ["사과", "바나나", "컴퓨터", "코딩", "하늘", "바다", "자동차", "선생님", "강아지", "고양이", "학교", "도서관"],
-            en: ["apple", "banana", "computer", "coding", "sky", "sea", "car", "teacher", "dog", "cat", "school", "library"]
-        };
+    <!-- 입력창 -->
+    <div class="input-wrapper">
+        <input type="text" id="input-area" placeholder="여기에 입력하세요…" autocomplete="off" autofocus spellcheck="false">
+        <span class="input-hint">ENTER / SPACE로 다음 단어</span>
+    </div>
 
-        let lang = 'ko';
-        let score = 0;
-        let startTime = null;
-        let totalChars = 0;
-        let isComposing = false; // 한글 조합 중 여부
-        let timerInterval = null;
+    <div class="reset-row">
+        <button class="reset-btn" onclick="resetAll()">↺ 다시 시작</button>
+    </div>
 
-        const display   = document.getElementById('word-display');
-        const input     = document.getElementById('input-area');
-        const scoreDisp = document.getElementById('score');
-        const cpmDisp   = document.getElementById('cpm');
-        const timerDisp = document.getElementById('timer');
-        const progressFill = document.getElementById('progress-fill');
+<script>
+// ──────────────────────────────────────────────
+//  DATA
+// ──────────────────────────────────────────────
+const DATA = {
+    word: {
+        ko: ["사과","바나나","컴퓨터","코딩","하늘","바다","자동차","선생님","강아지","고양이","학교","도서관","행복","사랑","꿈","자유","지식","과학","음악","그림","노래","춤","영화","여행","산","강","바람","구름","봄","여름","가을","겨울","달","별","태양","우주","지구","인터넷","스마트폰","키보드","마우스","모니터","소프트웨어","알고리즘","데이터","인공지능","로봇","미래","창의력"],
+        en: ["apple","banana","computer","coding","sky","ocean","car","teacher","puppy","kitten","school","library","happy","love","dream","freedom","wisdom","science","music","painting","singing","dancing","movie","travel","mountain","river","breeze","cloud","spring","summer","autumn","winter","moon","star","sunlight","universe","earth","internet","smartphone","keyboard","algorithm","dataset","neural","robot","future","creative","logic","pixel","syntax","debug"]
+    },
+    para: {
+        ko: [
+            "가을 하늘이 높고 푸릅니다. 바람이 살랑살랑 불어오고 낙엽이 춤을 춥니다. 오늘도 열심히 타자 연습을 합시다. 빠른 손가락과 정확한 타이핑이 여러분의 실력을 높여 줄 것입니다.",
+            "컴퓨터 과학은 현대 사회의 핵심입니다. 알고리즘과 데이터 구조를 잘 이해하면 복잡한 문제를 효율적으로 해결할 수 있습니다. 꾸준한 연습이 최고의 프로그래머를 만들어 냅니다.",
+            "인공지능 기술이 빠르게 발전하고 있습니다. 기계 학습과 딥러닝은 의료, 교육, 예술 등 다양한 분야에서 혁신을 이끌고 있습니다. 우리는 기술과 함께 더 나은 미래를 만들어 갑니다.",
+            "독서는 지식과 상상력의 원천입니다. 좋은 책 한 권은 인생을 바꿀 수도 있습니다. 매일 조금씩 읽는 습관이 여러분을 더 넓은 세계로 이끌어 줄 것입니다. 오늘은 어떤 책을 읽으셨나요?"
+        ],
+        en: [
+            "The autumn sky stretches high and blue. A gentle breeze drifts in and fallen leaves begin to dance. Let us practice typing diligently today. Fast fingers and precise keystrokes will elevate your skills to new heights.",
+            "Computer science is at the heart of modern society. A solid understanding of algorithms and data structures allows you to solve complex problems efficiently. Consistent practice creates the best programmers.",
+            "Artificial intelligence is advancing at a remarkable pace. Machine learning and deep learning are driving innovation across medicine, education, and the arts. Together with technology, we shape a brighter future.",
+            "Reading is the source of knowledge and imagination. A single great book can change the course of a life. Building a habit of reading a little each day will open doors to a much wider world. What are you reading today?"
+        ]
+    }
+};
 
-        // ── 타이머 ──────────────────────────────
-        function startTimer() {
-            if (timerInterval) return;
-            startTime = Date.now();
-            timerInterval = setInterval(() => {
-                const secs = Math.floor((Date.now() - startTime) / 1000);
-                timerDisp.innerText = secs + 's';
-            }, 500);
+// ──────────────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────────────
+let lang = 'ko';
+let gameMode = 'word'; // 'word' | 'para'
+
+// 낱말 모드
+let wordQueue = [];
+let wordIndex = 0;          // 현재 맞춰야 할 단어 인덱스
+
+// 장문 모드
+let paraText = '';
+let paraPos = 0;            // 현재 커서 위치
+let paraErrors = 0;
+
+// 공통
+let score = 0;
+let totalChars = 0;
+let totalAttempts = 0;
+let startTime = null;
+let timerInterval = null;
+let isComposing = false;
+
+// DOM
+const inputEl      = document.getElementById('input-area');
+const scoreEl      = document.getElementById('score');
+const cpmEl        = document.getElementById('cpm');
+const timerEl      = document.getElementById('timer');
+const accEl        = document.getElementById('accuracy');
+const wordQueueEl  = document.getElementById('word-queue');
+const progressFill = document.getElementById('progress-fill');
+const paraTextEl   = document.getElementById('para-text');
+const wordModeEl   = document.getElementById('word-mode');
+const paraModeEl   = document.getElementById('para-mode');
+
+// ──────────────────────────────────────────────
+//  TIMER
+// ──────────────────────────────────────────────
+function startTimer() {
+    if (timerInterval) return;
+    startTime = Date.now();
+    timerInterval = setInterval(() => {
+        const s = Math.floor((Date.now() - startTime) / 1000);
+        timerEl.textContent = s + 's';
+        updateCPM();
+    }, 500);
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    startTime = null;
+    timerEl.textContent = '0s';
+}
+
+function updateCPM() {
+    if (!startTime || totalChars === 0) return;
+    const mins = (Date.now() - startTime) / 60000;
+    cpmEl.textContent = Math.round(totalChars / mins);
+}
+
+function updateAccuracy() {
+    if (totalAttempts === 0) { accEl.textContent = '—'; return; }
+    accEl.textContent = Math.round((totalChars / totalAttempts) * 100) + '%';
+}
+
+// ──────────────────────────────────────────────
+//  WORD MODE
+// ──────────────────────────────────────────────
+function buildWordQueue() {
+    const list = DATA.word[lang];
+    // 무한 큐: 현재 인덱스 기준으로 앞 2개(완료) + 현재 + 다음 5개
+    wordQueue = [];
+    for (let i = 0; i < 40; i++) {
+        wordQueue.push(list[Math.floor(Math.random() * list.length)]);
+    }
+    wordIndex = 2; // 0,1은 완료된 것처럼 시작 (시각적 패딩)
+    wordQueue[0] = '';
+    wordQueue[1] = '';
+}
+
+function refillQueue() {
+    const list = DATA.word[lang];
+    // 큐 끝에 5개씩 추가
+    if (wordIndex > wordQueue.length - 6) {
+        for (let i = 0; i < 10; i++) {
+            wordQueue.push(list[Math.floor(Math.random() * list.length)]);
         }
+    }
+}
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            startTime = null;
-            timerDisp.innerText = '0s';
+function renderWordQueue() {
+    wordQueueEl.innerHTML = '';
+    // done: index-2, index-1 (최근 완료)
+    // active: index
+    // next1: index+1, next2: index+2, next3: index+3
+    const slots = [
+        { offset: -2, cls: 'done' },
+        { offset: -1, cls: 'done' },
+        { offset:  0, cls: 'active' },
+        { offset:  1, cls: 'next1' },
+        { offset:  2, cls: 'next2' },
+        { offset:  3, cls: 'next3' },
+    ];
+    slots.forEach(({ offset, cls }) => {
+        const idx = wordIndex + offset;
+        if (idx < 0 || idx >= wordQueue.length) return;
+        const word = wordQueue[idx];
+        if (!word) return;
+        const el = document.createElement('span');
+        el.className = 'wq-item ' + cls;
+        el.id = offset === 0 ? 'wq-active' : '';
+        el.textContent = word;
+        wordQueueEl.appendChild(el);
+    });
+}
+
+function wordModeCheck() {
+    if (isComposing) return;
+    const val = input_val();
+    if (!val) return;
+    if (!startTime) startTimer();
+
+    const target = wordQueue[wordIndex] || '';
+    totalAttempts += val.length;
+
+    // 진행률
+    const matchLen = [...val].filter((c, i) => c === ([...target][i] || '')).length;
+    progressFill.style.width = Math.min(100, (matchLen / target.length) * 100) + '%';
+
+    // 오타
+    if (!target.startsWith(val)) {
+        inputEl.classList.add('error');
+        const activeEl = document.getElementById('wq-active');
+        if (activeEl) {
+            activeEl.classList.add('error');
+            setTimeout(() => activeEl.classList.remove('error'), 250);
         }
-
-        // ── 다음 단어 ────────────────────────────
-        function nextWord() {
-            const list = words[lang];
-            display.innerText = list[Math.floor(Math.random() * list.length)];
-            input.value = '';
-            input.classList.remove('error');
+        setTimeout(() => {
+            inputEl.value = '';
+            inputEl.classList.remove('error');
             progressFill.style.width = '100%';
+        }, 280);
+        return;
+    }
+
+    inputEl.classList.remove('error');
+
+    // 완성
+    if (val === target) {
+        score++;
+        totalChars += target.length;
+        scoreEl.textContent = score;
+        updateAccuracy();
+        updateCPM();
+        spawnFeedback('+1');
+
+        wordIndex++;
+        refillQueue();
+        renderWordQueue();
+        inputEl.value = '';
+        progressFill.style.width = '100%';
+
+        // 팝 애니메이션
+        setTimeout(() => {
+            const a = document.getElementById('wq-active');
+            if (a) { a.classList.add('pop'); setTimeout(() => a.classList.remove('pop'), 300); }
+        }, 20);
+    }
+}
+
+// ──────────────────────────────────────────────
+//  PARA MODE
+// ──────────────────────────────────────────────
+function loadParagraph() {
+    const list = DATA.para[lang];
+    paraText = list[Math.floor(Math.random() * list.length)];
+    paraPos = 0;
+    paraErrors = 0;
+    renderPara();
+}
+
+function renderPara() {
+    let html = '';
+    for (let i = 0; i < paraText.length; i++) {
+        const ch = paraText[i] === ' ' ? '&nbsp;' : paraText[i];
+        if (i < paraPos) {
+            html += `<span class="char-done">${ch}</span>`;
+        } else if (i === paraPos) {
+            html += `<span class="char-cursor char-pending">${ch}</span>`;
+        } else {
+            html += `<span class="char-pending">${ch}</span>`;
         }
+    }
+    paraTextEl.innerHTML = html;
+}
 
-        // ── 언어 변경 ────────────────────────────
-        function setLanguage(l) {
-            lang = l;
-            score = 0; totalChars = 0;
-            scoreDisp.innerText = 0;
-            cpmDisp.innerText = 0;
-            resetTimer();
-            document.querySelectorAll('.lang-btn').forEach((b, i) => {
-                b.classList.toggle('active', (i === 0 && l === 'ko') || (i === 1 && l === 'en'));
-            });
-            nextWord();
-            input.focus();
+function paraModeCheck() {
+    if (isComposing) return;
+    const val = inputEl.value;
+    if (!val) return;
+    if (!startTime) startTimer();
+
+    const lastChar = val[val.length - 1];
+    const expected = paraText[paraPos];
+
+    totalAttempts++;
+
+    if (lastChar === expected) {
+        totalChars++;
+        paraPos++;
+        inputEl.value = '';
+        inputEl.classList.remove('error');
+        renderPara();
+        updateCPM();
+        updateAccuracy();
+
+        // 문단 완성
+        if (paraPos >= paraText.length) {
+            score++;
+            scoreEl.textContent = score;
+            spawnFeedback('완성!');
+            setTimeout(() => {
+                loadParagraph();
+                inputEl.value = '';
+            }, 600);
         }
+    } else {
+        paraErrors++;
+        inputEl.classList.add('error');
+        inputEl.value = '';
+        setTimeout(() => inputEl.classList.remove('error'), 250);
+        updateAccuracy();
+    }
+}
 
-        // ── 한글 조합 이벤트 ─────────────────────
-        input.addEventListener('compositionstart', () => { isComposing = true; });
-        input.addEventListener('compositionend',   () => {
-            isComposing = false;
-            checkInput(); // 조합 완료 후 한 번 체크
-        });
+// ──────────────────────────────────────────────
+//  MODE / LANG SWITCH
+// ──────────────────────────────────────────────
+function setGameMode(mode) {
+    gameMode = mode;
+    resetAll();
+    document.getElementById('btn-word').classList.toggle('active', mode === 'word');
+    document.getElementById('btn-para').classList.toggle('active', mode === 'para');
+    wordModeEl.style.display  = mode === 'word' ? 'block' : 'none';
+    paraModeEl.style.display  = mode === 'para' ? 'block' : 'none';
+    const hint = inputEl.nextElementSibling;
+    hint.textContent = mode === 'word' ? 'ENTER / SPACE로 다음 단어' : '한 글자씩 입력하세요';
+    inputEl.focus();
+}
 
-        // ── 입력 체크 ────────────────────────────
-        function checkInput() {
-            // 조합 중이면 검사하지 않음 (한글 오타 방지 핵심!)
-            if (isComposing) return;
+function setLanguage(l) {
+    lang = l;
+    document.getElementById('btn-ko').classList.toggle('active', l === 'ko');
+    document.getElementById('btn-en').classList.toggle('active', l === 'en');
+    resetAll();
+    inputEl.focus();
+}
 
-            const currentVal = input.value;
-            if (!currentVal) return;
+function resetAll() {
+    score = 0; totalChars = 0; totalAttempts = 0;
+    scoreEl.textContent = '0';
+    cpmEl.textContent = '0';
+    accEl.textContent = '—';
+    resetTimer();
+    inputEl.value = '';
+    inputEl.classList.remove('error');
 
-            // 타이머 시작 (첫 입력 시)
-            if (!startTime) startTimer();
+    if (gameMode === 'word') {
+        buildWordQueue();
+        renderWordQueue();
+        progressFill.style.width = '100%';
+    } else {
+        loadParagraph();
+    }
+}
 
-            const target = display.innerText;
+// ──────────────────────────────────────────────
+//  INPUT EVENTS
+// ──────────────────────────────────────────────
+inputEl.addEventListener('compositionstart', () => { isComposing = true; });
+inputEl.addEventListener('compositionend',   () => { isComposing = false; checkInput(); });
 
-            // 진행률 표시
-            const matchLen = [...currentVal].filter((c, i) => c === [...target][i]).length;
-            progressFill.style.width = (matchLen / target.length * 100) + '%';
+inputEl.addEventListener('input', () => {
+    if (!isComposing) checkInput();
+});
 
-            // 오타 감지: 입력값이 target의 앞부분과 맞지 않으면
-            if (!target.startsWith(currentVal)) {
-                input.classList.add('error');
-                display.classList.remove('shake');
-                void display.offsetWidth; // reflow
-                display.classList.add('shake');
-                // 오타 시 단어를 바꾸지 않고 입력만 초기화
-                setTimeout(() => {
-                    input.value = '';
-                    input.classList.remove('error');
-                    progressFill.style.width = '100%';
-                }, 300);
-                return;
-            }
+// SPACE / ENTER → 낱말 모드에서 강제 제출
+inputEl.addEventListener('keydown', e => {
+    if (gameMode === 'word' && (e.key === ' ' || e.key === 'Enter')) {
+        e.preventDefault();
+        // 공백/엔터 전 value로 체크
+        checkInput();
+    }
+});
 
-            input.classList.remove('error');
+function input_val() {
+    return inputEl.value.trim();
+}
 
-            // 단어 완성
-            if (currentVal === target) {
-                score++;
-                totalChars += target.length;
-                scoreDisp.innerText = score;
+function checkInput() {
+    if (gameMode === 'word') wordModeCheck();
+    else paraModeCheck();
+}
 
-                // CPM 계산
-                const mins = (Date.now() - startTime) / 60000;
-                cpmDisp.innerText = Math.round(totalChars / mins);
+// ──────────────────────────────────────────────
+//  FEEDBACK
+// ──────────────────────────────────────────────
+function spawnFeedback(text) {
+    const el = document.createElement('div');
+    el.className = 'feedback';
+    el.textContent = text;
+    const rect = (gameMode === 'word' ? wordQueueEl : paraTextEl).getBoundingClientRect();
+    el.style.left = (rect.left + rect.width / 2 - 30) + 'px';
+    el.style.top  = (rect.top + 10) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+}
 
-                // 팝 애니메이션
-                display.classList.remove('pop');
-                void display.offsetWidth;
-                display.classList.add('pop');
-
-                // +1 float 효과
-                spawnFeedback();
-
-                nextWord();
-            }
-        }
-
-        input.addEventListener('input', checkInput);
-
-        // ── +1 시각 피드백 ───────────────────────
-        function spawnFeedback() {
-            const el = document.createElement('div');
-            el.className = 'feedback';
-            el.textContent = '+1';
-            const rect = display.getBoundingClientRect();
-            el.style.left = (rect.left + rect.width / 2 - 20) + 'px';
-            el.style.top  = (rect.top - 10) + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 700);
-        }
-
-        nextWord();
-    </script>
+// ──────────────────────────────────────────────
+//  INIT
+// ──────────────────────────────────────────────
+setGameMode('word');
+</script>
 </body>
 </html>
