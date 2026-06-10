@@ -198,7 +198,9 @@
     padding: 28px 32px;
     display: none;
     position: relative;
+    min-height: 120px;
   }
+  #para-display.active { display: block; }
 
   #para-text {
     font-size: 20px;
@@ -208,6 +210,7 @@
     white-space: pre-wrap;
     overflow-wrap: break-word;
     max-width: 100%;
+    display: block;
   }
 
   #para-text.lang-ko { font-family: var(--font-ko); font-size: 19px; }
@@ -597,7 +600,7 @@ function setGameMode(m) {
   });
   const isWord = m === 'word';
   document.getElementById('word-display').style.display = isWord ? '' : 'none';
-  document.getElementById('para-display').style.display = isWord ? 'none' : '';
+  document.getElementById('para-display').classList.toggle('active', !isWord);
   document.getElementById('progress-wrap').style.display = isWord ? 'none' : '';
   document.getElementById('input-hint').textContent = isWord ? 'Space / Enter → 다음 단어' : '그대로 타이핑하세요';
   document.getElementById('score-label').textContent = isWord ? '완성 단어' : '완성 글자';
@@ -853,6 +856,7 @@ inputEl.addEventListener('compositionend', e => {
   if (gameMode === 'para' && !gameOver) {
     const composed = e.data || '';
     inputEl.value = '';
+    if (!gameStarted && composed.length > 0) { gameStarted = true; startTimer(); }
     for (const ch of composed) handleParaChar(ch);
   }
 });
