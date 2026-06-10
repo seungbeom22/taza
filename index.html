@@ -9,18 +9,18 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --border: #2a2e3e;
-    --accent: #7c6af7;
-    --accent2: #a78bfa;
-    --text: #e2e8f0;
-    --text-dim: #64748b;
-    --text-muted: #334155;
-    --correct: #34d399;
-    --wrong: #f87171;
-    --pending: #94a3b8;
-    --cursor-color: #7c6af7;
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --border: #e2e4ec;
+    --accent: #5b4ef0;
+    --accent2: #7c6af7;
+    --text: #1a1d27;
+    --text-dim: #6b7280;
+    --text-muted: #c4c8d4;
+    --correct: #16a34a;
+    --wrong: #dc2626;
+    --pending: #9ca3af;
+    --cursor-color: #5b4ef0;
     --font-mono: 'JetBrains Mono', monospace;
     --font-ko: 'Noto Sans KR', sans-serif;
   }
@@ -848,7 +848,14 @@ function endGame() {
 
 // Composition events (for Korean IME)
 inputEl.addEventListener('compositionstart', () => { isComposing = true; });
-inputEl.addEventListener('compositionend',   () => { isComposing = false; });
+inputEl.addEventListener('compositionend', e => {
+  isComposing = false;
+  if (gameMode === 'para' && !gameOver) {
+    const composed = e.data || '';
+    inputEl.value = '';
+    for (const ch of composed) handleParaChar(ch);
+  }
+});
 
 // Word mode: Space or Enter submits the word
 inputEl.addEventListener('keydown', e => {
@@ -896,21 +903,11 @@ inputEl.addEventListener('input', e => {
   // Para mode
   if (isComposing) return; // wait for composition to complete
 
-  handleParaInput(e);
+  if (inputEl.value) { handleParaChar(inputEl.value[inputEl.value.length - 1]); inputEl.value = ''; }
 });
 
 // Para mode: handle each character
-function handleParaInput(e) {
-  const val = inputEl.value;
-  if (!val.length && paraIndex > 0) {
-    // Backspace-like (shouldn't happen in our model but guard)
-    return;
-  }
-
-  // We process the last character typed
-  const typed = val[val.length - 1];
-  if (typed === undefined) return;
-
+function handleParaChar(typed) {
   const target = paraText[paraIndex];
   if (target === undefined) return;
 
@@ -936,9 +933,6 @@ function handleParaInput(e) {
   if (spans[paraIndex]) {
     spans[paraIndex].classList.add('cursor');
   }
-
-  // Clear input (we manage state ourselves)
-  inputEl.value = '';
 
   updateProgress();
   updateStats();
