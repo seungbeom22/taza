@@ -9,134 +9,95 @@
         body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 30px 20px; min-height: 100vh; }
         h1 { color: var(--accent); margin-bottom: 18px; font-size: 28px; letter-spacing: 2px; }
 
-        /* 모드 탭 */
-        .mode-tabs { display: flex; gap: 0; margin-bottom: 18px; border: 2px solid var(--accent); border-radius: 10px; overflow: hidden; }
-        .mode-tab { padding: 8px 28px; font-size: 17px; font-weight: bold; background: white; color: var(--accent); cursor: pointer; border: none; transition: all 0.15s; }
+        .mode-tabs { display: flex; margin-bottom: 14px; border: 2px solid var(--accent); border-radius: 10px; overflow: hidden; }
+        .mode-tab { padding: 9px 32px; font-size: 16px; font-weight: bold; border: none; background: white; color: var(--accent); cursor: pointer; transition: all 0.15s; }
         .mode-tab.active { background: var(--accent); color: white; }
 
         .time-btns { display: flex; gap: 10px; margin-bottom: 18px; }
-        .time-btn { padding: 8px 22px; font-size: 17px; font-weight: bold; border: 2px solid var(--accent); border-radius: 8px; background: white; color: var(--accent); cursor: pointer; transition: all 0.15s; }
+        .time-btn { padding: 8px 22px; font-size: 17px; font-weight: bold; border: 2px solid var(--accent); border-radius: 8px; background: white; color: var(--accent); cursor: pointer; }
         .time-btn.active { background: var(--accent); color: white; }
-        .stats { display: flex; gap: 30px; margin-bottom: 20px; font-size: 20px; font-weight: bold; color: #333; }
+
+        .stats { display: flex; gap: 30px; margin-bottom: 20px; font-size: 20px; font-weight: bold; color: #333; flex-wrap: wrap; }
         .stats span { color: var(--accent); font-size: 24px; }
 
-        /* 단어 모드 디스플레이 */
+        /* 단어 모드 belt */
         #display-area {
             width: 100%; max-width: 900px; height: 130px;
             background: white; border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            margin-bottom: 20px;
-            overflow: hidden; position: relative;
+            margin-bottom: 20px; overflow: hidden; position: relative;
         }
         #display-area::before {
-            content: ''; position: absolute;
-            left: 50%; top: 15%; bottom: 15%;
-            width: 3px; margin-left: -1.5px;
-            background: rgba(91,78,240,0.15);
-            border-radius: 2px; z-index: 1;
-            pointer-events: none;
+            content: ''; position: absolute; left: 50%; top: 15%; bottom: 15%;
+            width: 3px; margin-left: -1.5px; background: rgba(91,78,240,0.15);
+            border-radius: 2px; z-index: 1; pointer-events: none;
         }
         #display-area::after {
-            content: ''; position: absolute;
-            inset: 0; pointer-events: none; z-index: 2;
-            background: linear-gradient(to right,
-                white 0%, transparent 18%,
-                transparent 82%, white 100%);
+            content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+            background: linear-gradient(to right, white 0%, transparent 18%, transparent 82%, white 100%);
         }
         #belt {
             display: flex; align-items: center; height: 100%;
-            position: absolute; left: 50%;
-            white-space: nowrap;
+            position: absolute; left: 50%; white-space: nowrap;
             transition: transform 0.12s ease-out;
         }
-        .char {
-            font-size: 54px; font-weight: bold; color: #bbb;
-            min-width: 0.55em; text-align: center;
-            transition: color 0.08s; letter-spacing: 0.04em;
-        }
+        .char { font-size: 52px; font-weight: bold; color: #bbb; min-width: 0.55em; text-align: center; transition: color 0.08s; letter-spacing: 0.04em; }
         .char.done-ok  { color: var(--correct); }
         .char.done-err { color: var(--wrong); }
         .char.current  { color: #111; }
-        .char.current::after {
-            content: ''; display: block; height: 4px;
-            background: var(--accent); border-radius: 2px;
-            animation: blink 0.8s infinite;
-        }
+        .char.current::after { content: ''; display: block; height: 4px; background: var(--accent); border-radius: 2px; animation: blink 0.8s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-        /* 장문 모드 디스플레이 */
+        /* 장문 모드 */
         #passage-area {
-            display: none;
-            width: 100%; max-width: 900px;
+            display: none; width: 100%; max-width: 900px;
             background: white; border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            padding: 24px 32px;
-            margin-bottom: 20px;
-            line-height: 2.0;
-            font-size: 22px;
-            min-height: 130px;
-            position: relative;
-            overflow: hidden;
+            padding: 22px 28px; margin-bottom: 20px;
+            font-size: 22px; line-height: 2; letter-spacing: 0.03em;
+            word-break: break-all; max-height: 200px; overflow-y: auto;
         }
-        #passage-text { color: #ccc; word-break: break-all; position: relative; }
-        .p-char { position: relative; }
-        .p-char.done-ok  { color: var(--correct); }
-        .p-char.done-err { color: var(--wrong); background: #fff0f0; border-radius: 2px; }
-        .p-char.current  { color: #111; }
-        .p-char.current::after {
-            content: ''; display: block; height: 3px;
-            background: var(--accent); border-radius: 2px;
-            animation: blink 0.8s infinite;
-        }
+        .p-char { }
+        .p-done-ok  { color: var(--correct); }
+        .p-done-err { color: var(--wrong); background: #ffe0e0; border-radius: 2px; }
+        .p-current  { color: #111; border-bottom: 3px solid var(--accent); }
+        .p-pending  { color: #bbb; }
 
-        /* 입력란 */
-        #typing-input {
-            width: 100%; max-width: 900px; height: 80px;
-            font-size: 42px;
-            padding: 10px 20px;
+        /* 입력창 */
+        #typing-input, #passage-input {
+            width: 100%; max-width: 900px; height: 70px;
+            font-size: 36px; padding: 10px 20px;
             border: 3px solid var(--accent); border-radius: 15px;
-            text-align: center; outline: none; font-family: inherit;
-            ime-mode: active;
+            outline: none; font-family: inherit;
+            text-align: center;
         }
-        #typing-input:focus { box-shadow: 0 0 0 3px rgba(91,78,240,0.25); }
-        #typing-input.correct-bg { border-color: var(--correct); }
-        #typing-input.wrong-bg   { border-color: var(--wrong); background: #fff5f5; }
+        #passage-input { display: none; text-align: left; font-size: 28px; }
+        #typing-input:focus, #passage-input:focus { box-shadow: 0 0 0 3px rgba(91,78,240,0.25); }
+        .wrong-border { border-color: var(--wrong) !important; background: #fff5f5; }
+        .ok-border    { border-color: var(--correct) !important; }
 
-        /* 장문 모드 입력란 */
-        #passage-input {
-            display: none;
-            width: 100%; max-width: 900px; height: 80px;
-            font-size: 30px;
-            padding: 10px 20px;
-            border: 3px solid var(--accent); border-radius: 15px;
-            text-align: left; outline: none; font-family: inherit;
-        }
-        #passage-input:focus { box-shadow: 0 0 0 3px rgba(91,78,240,0.25); }
-
-        .btns { display: flex; gap: 14px; margin-top: 16px; }
+        .btns { display: flex; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
         .btns button { padding: 12px 28px; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
         #btn-restart { background: var(--accent); color: white; }
         #btn-lang    { background: #e2e8f0; color: #333; }
 
-        /* 기록 패널 */
         #records-panel { width: 100%; max-width: 900px; margin-top: 30px; }
         #records-panel h2 { margin-bottom: 10px; color: #444; font-size: 20px; }
         #records-list { display: flex; flex-direction: column; gap: 8px; }
-        .record-row { background: white; border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.07); font-size: 16px; }
+        .record-row { background: white; border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.07); font-size: 16px; flex-wrap: wrap; gap: 6px; }
         .record-row .rank { font-weight: bold; color: var(--accent); width: 32px; }
         .record-row .rec-wpm { font-size: 22px; font-weight: bold; color: #222; }
         .record-row .rec-acc { color: #666; }
         .record-row .rec-time { color: #888; font-size: 14px; }
         .record-row .rec-date { color: #aaa; font-size: 13px; }
 
-        /* 결과 오버레이 */
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; z-index: 10; }
         #overlay.show { display: flex; }
         #result-box { background: white; border-radius: 24px; padding: 40px 50px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2); min-width: 320px; }
         #result-box h2 { font-size: 26px; margin-bottom: 20px; color: #333; }
         .res-label { font-size: 16px; color: #888; margin-top: 16px; }
-        .res-num { font-size: 64px; font-weight: bold; color: var(--accent); line-height: 1.1; }
-        .res-acc { font-size: 26px; font-weight: bold; color: #22c55e; }
+        .res-num   { font-size: 64px; font-weight: bold; color: var(--accent); line-height: 1.1; }
+        .res-acc   { font-size: 26px; font-weight: bold; color: #22c55e; }
         #result-box button { margin-top: 26px; padding: 14px 40px; font-size: 20px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
@@ -144,40 +105,42 @@
 
 <h1>⌨️ 타자 연습</h1>
 
-<!-- 모드 탭 -->
 <div class="mode-tabs">
-    <button class="mode-tab active" id="tab-word" onclick="switchMode('word')">단어 모드</button>
-    <button class="mode-tab" id="tab-passage" onclick="switchMode('passage')">장문 모드</button>
+    <button class="mode-tab active" id="tab-word"    onclick="switchMode('word')">단어 모드</button>
+    <button class="mode-tab"        id="tab-passage" onclick="switchMode('passage')">장문 모드</button>
 </div>
 
 <div class="time-btns">
-    <button class="time-btn" data-sec="60">1분</button>
+    <button class="time-btn"        data-sec="60">1분</button>
     <button class="time-btn active" data-sec="180">3분</button>
-    <button class="time-btn" data-sec="300">5분</button>
+    <button class="time-btn"        data-sec="300">5분</button>
 </div>
+
 <div class="stats">
     <div>시간: <span id="stat-time">180</span>s</div>
     <div>타수: <span id="stat-wpm">0</span></div>
     <div>정확도: <span id="stat-acc">100</span>%</div>
-    <div id="lang-label">🇺🇸 영어</div>
+    <div id="lang-label" style="font-weight:bold">🇺🇸 English</div>
 </div>
 
 <!-- 단어 모드 -->
 <div id="display-area"><div id="belt"></div></div>
-<input type="text" id="typing-input" autocomplete="off" spellcheck="false" placeholder="">
+<input type="text" id="typing-input"  autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off">
 
 <!-- 장문 모드 -->
-<div id="passage-area"><div id="passage-text"></div></div>
-<input type="text" id="passage-input" autocomplete="off" spellcheck="false" placeholder="">
+<div id="passage-area"></div>
+<input type="text" id="passage-input" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off">
 
 <div class="btns">
-    <button id="btn-restart">🔄 다시 시작</button>
-    <button id="btn-lang">🔁 한글로 전환</button>
+    <button id="btn-restart" onclick="initGame()">🔄 다시 시작</button>
+    <button id="btn-lang"    onclick="toggleLang()">🔁 한글로 전환</button>
 </div>
+
 <div id="records-panel">
     <h2>📊 최근 기록 (자동 저장)</h2>
     <div id="records-list"></div>
 </div>
+
 <div id="overlay">
     <div id="result-box">
         <h2>🎉 결과</h2>
@@ -185,241 +148,289 @@
         <div class="res-num" id="res-wpm">0</div>
         <div class="res-label">정확도</div>
         <div class="res-acc" id="res-acc">100%</div>
-        <button onclick="restartGame()">다시 시작</button>
+        <button onclick="initGame()">다시 시작</button>
     </div>
 </div>
 
 <script>
-// ── 단어 목록 ──
+// ════════════════════════════
+//  단어 풀
+// ════════════════════════════
 const WORDS = {
-    ko: ['사과','바나나','하늘','구름','강아지','고양이','자동차','기차','비행기','노트북','스마트폰','커피','도서관','학교','병원','공원','바다','산','강','꽃','나무','음악','영화','책상','의자','창문','시계','달력','연필','지우개','공부','운동','여행','요리','사진','음식','날씨','계절','봄','여름','가을','겨울','태양','달','별','우주','과학','기술','미래','행복','성공','노력','친구','가족','사랑','추억','꿈','희망','도전','승리','대한민국','서울','부산','제주도','한강','경복궁','비빔밥','김치','불고기','삼겹살','컴퓨터','인터넷','소프트웨어','알고리즘','데이터','프로그램','화면','키보드','마우스','스크린'],
-    en: ['apple','banana','keyboard','typing','practice','speed','accuracy','computer','monitor','screen','program','software','language','science','nature','weather','sunshine','rainbow','butterfly','mountain','ocean','forest','journey','adventure','knowledge','learning','success','challenge','victory','happiness','family','friend','memory','future','present','history','culture','music','rhythm','melody','database','network','server','browser','function','variable','constant','object','string','number','python','javascript','algorithm','interface','performance','developer','creative','together','window','input','output','process','system','design','project','content','section','module','library','method','return','import','class','event']
+    ko: ['사과','바나나','하늘','구름','강아지','고양이','자동차','기차','비행기','노트북',
+         '스마트폰','커피','도서관','학교','병원','공원','바다','산','강','꽃','나무',
+         '음악','영화','책상','의자','창문','시계','달력','연필','지우개','공부','운동',
+         '여행','요리','사진','음식','날씨','계절','봄','여름','가을','겨울','태양','달',
+         '별','우주','과학','기술','미래','행복','성공','노력','친구','가족','사랑','추억',
+         '꿈','희망','도전','승리','서울','부산','제주도','한강','비빔밥','김치','불고기',
+         '컴퓨터','인터넷','소프트웨어','알고리즘','데이터','프로그램','키보드','마우스'],
+    en: ['apple','banana','keyboard','typing','practice','speed','accuracy','computer',
+         'monitor','screen','program','software','language','science','nature','weather',
+         'sunshine','rainbow','butterfly','mountain','ocean','forest','journey','adventure',
+         'knowledge','learning','success','challenge','victory','happiness','family','friend',
+         'memory','future','present','history','culture','music','rhythm','melody','database',
+         'network','server','browser','function','variable','constant','object','string',
+         'number','python','javascript','algorithm','interface','performance','developer',
+         'creative','together','window','mouse','speaker','camera','battery','charger',
+         'laptop','tablet','cable','power','search','download','upload','message','contact',
+         'setting','account','profile','login','password','freedom','thought','simple','effort']
 };
 
-// ── 장문 텍스트 ──
+// ════════════════════════════
+//  장문 텍스트 풀
+// ════════════════════════════
 const PASSAGES = {
     ko: [
-        '봄이 오면 산에는 꽃이 피고 들에는 새싹이 돋아납니다. 파란 하늘 아래 따뜻한 햇살이 내리쬐고 상쾌한 바람이 불어옵니다. 아이들은 공원에서 뛰어놀고 어른들은 벤치에 앉아 책을 읽습니다. 봄날의 풍경은 언제나 마음을 설레게 합니다.',
-        '기술의 발전으로 우리의 생활은 크게 달라졌습니다. 스마트폰 하나로 쇼핑을 하고 영상통화를 하며 음악을 듣습니다. 인공지능은 의료와 교육 분야에서도 활용되고 있으며 앞으로 더욱 발전할 것입니다. 우리는 변화하는 시대에 발맞추어 새로운 지식을 배워야 합니다.',
-        '독서는 마음의 양식이라고 합니다. 책 속에는 수많은 지혜와 경험이 담겨 있습니다. 좋은 책 한 권이 사람의 인생을 바꿀 수도 있습니다. 매일 조금씩이라도 책을 읽는 습관을 들이면 생각이 깊어지고 표현력이 풍부해집니다.'
+        '봄이 오면 산에는 진달래가 피고 들판에는 새싹이 돋아납니다. 따뜻한 햇살 아래 사람들은 나들이를 즐기고 아이들은 공원에서 뛰어 놉니다. 봄바람이 살랑살랑 불어오면 마음도 덩달아 가벼워집니다.',
+        '컴퓨터는 현대인의 생활에서 빠질 수 없는 중요한 도구입니다. 문서 작성부터 영상 편집까지 다양한 작업을 빠르고 편리하게 처리할 수 있습니다. 앞으로 인공지능 기술이 더욱 발전하면 활용 범위는 더욱 넓어질 것입니다.',
+        '독서는 마음을 풍요롭게 하는 훌륭한 습관입니다. 책을 읽으면 새로운 지식을 얻고 상상력을 키울 수 있습니다. 바쁜 일상 속에서도 하루 삼십 분 독서 습관을 들이면 삶이 한층 풍요로워집니다.',
+        '운동은 건강한 몸과 마음을 유지하는 데 매우 중요합니다. 규칙적인 운동은 체력을 키우고 스트레스를 해소하는 데 도움이 됩니다. 매일 조금씩이라도 걷거나 스트레칭을 하면 건강에 큰 도움이 됩니다.',
+        '요리는 창의력과 인내심이 필요한 즐거운 활동입니다. 신선한 재료를 선택하고 정성껏 준비하면 맛있는 음식을 만들 수 있습니다. 가족과 함께 요리하고 음식을 나누는 시간은 소중한 추억이 됩니다.'
     ],
     en: [
-        'The quick brown fox jumps over the lazy dog near the riverbank. Birds sing in the morning light as the sun rises above the mountains. Children play in the park while parents watch from nearby benches. The gentle breeze carries the scent of flowers through the open windows.',
-        'Learning to type fast and accurately takes consistent daily practice. Start with the home row keys and build muscle memory over time. Focus on accuracy first and speed will naturally follow. Many professional typists can reach over one hundred words per minute with years of dedicated training.',
-        'Technology has transformed the way we communicate and work every day. Smartphones connect us to people around the world in an instant. Artificial intelligence helps doctors diagnose diseases and assists students in learning. The future holds even greater advances that will change our daily lives in ways we cannot yet imagine.'
+        'The quick brown fox jumps over the lazy dog near the river bank. Practice makes perfect when it comes to typing speed and accuracy. Keep your fingers on the home row keys and try to type without looking at the keyboard.',
+        'Technology has transformed the way we work and communicate with each other. With the rise of smartphones and computers, information is now available at our fingertips every day. Learning to type quickly and accurately is an essential skill in the modern workplace.',
+        'Reading books is one of the best ways to expand your knowledge and vocabulary over time. When you read regularly, you expose yourself to new ideas and different perspectives from around the world. This habit can help you become a better writer and a clearer communicator.',
+        'Exercise is essential for maintaining good physical and mental health throughout your life. Regular physical activity helps reduce stress and improves your overall mood significantly. Even a short walk every single day can make a significant difference in your wellbeing.',
+        'Cooking at home is a rewarding and creative activity that anyone can learn to enjoy. Choosing fresh ingredients and preparing meals from scratch allows you to control what goes into your food. Sharing a homemade meal with family and friends always creates wonderful and lasting memories.'
     ]
 };
 
-// ── 한글 자소 분해 타수 계산 ──
-// 실제 타자 사이트(한컴 등) 기준:
-// 자음+모음 조합: 초성(1) + 중성(1) = 2타
-// 받침 있으면: 초성(1) + 중성(1) + 종성(1) = 3타
-// 단독 자음/모음: 1타
-function koStrokeCount(str) {
-    let count = 0;
-    for (const ch of str) {
-        const code = ch.charCodeAt(0);
-        if (code >= 0xAC00 && code <= 0xD7A3) {
-            const offset = code - 0xAC00;
-            const jongseong = offset % 28;
-            count += jongseong > 0 ? 3 : 2;
-        } else if (ch !== ' ') {
-            count += 1;
-        }
+// ════════════════════════════
+//  타수 계산
+//  ■ 한글: 자소 분해 (초성1 + 중성1 + 종성1) → 2~3타/글자, 스페이스 1타
+//  ■ 영타: 글자당 1타, 스페이스 1타 (CPM 방식, 한컴/타자왕 표준)
+// ════════════════════════════
+// 복합모음(이중모음) 인덱스: ㅘ(9),ㅙ(10),ㅚ(11),ㅝ(14),ㅞ(15),ㅟ(16),ㅢ(19)
+// ※ ㅣ(20)는 단일모음이므로 제외. ㅠ(17),ㅛ(12),ㅡ(18)도 단일키라 제외.
+const KO_DOUBLE_JUNG = new Set([9,10,11,14,15,16,19]);
+
+function koCharStrokes(ch) {
+    const code = ch.charCodeAt(0);
+    if (code >= 0xAC00 && code <= 0xD7A3) {
+        const offset = code - 0xAC00;
+        const jungIdx = Math.floor((offset % (28 * 21)) / 28);
+        const hasJong = offset % 28 > 0;
+        // 초성(1) + 중성(복합이면 2, 단일이면 1) + 종성(있으면 1)
+        return 1 + (KO_DOUBLE_JUNG.has(jungIdx) ? 2 : 1) + (hasJong ? 1 : 0);
     }
-    return count;
+    return 1; // 비한글(영문/숫자/스페이스)은 1타
 }
 
-// ── 영어 타수: 글자수 (스페이스 포함) ──
-// 표준 영타 사이트 기준: 공백 포함 모든 글자 = 1타
-// 타/분 = CPM (Characters Per Minute) 기준
-function enStrokeCount(str) {
-    // 스페이스 포함 전체 글자수 (마지막 스페이스는 따로 +1 처리)
-    return str.length;
+function koStrokeCount(str) {
+    let n = 0;
+    for (const ch of str) n += koCharStrokes(ch);
+    return n;
 }
 
-// ── 상태 변수 ──
-let lang = 'en'; // 기본 영어
-let mode = 'word'; // 'word' or 'passage'
+function charStrokes(ch) {
+    return lang === 'ko' ? koCharStrokes(ch) : 1;
+}
+
+function wordStrokes(word) {
+    if (lang === 'ko') return koStrokeCount(word);
+    return word.length; // 영타: 글자 수 = 타수
+}
+
+// ════════════════════════════
+//  전역 상태
+// ════════════════════════════
+let lang = 'en'; // ← 기본값 영어
+let mode = 'word';
 let totalSeconds = 180;
+let startTime = null, timerInterval = null, gameOver = false;
 
 // 단어 모드
-let wordQueue = [], charList = [], wordBoundaries = [];
-let curWordPtr = 0;
+let wordQueue = [], charList = [], wordBoundaries = [], curWordPtr = 0;
+
+// 공통 통계
+let totalKeystrokeSum = 0; // 맞힌 타수 누산
 let correctWordCount = 0, wrongWordCount = 0;
-let totalKeystrokeSum = 0;  // 맞힌 타수 (스페이스 포함)
-let totalTypedStrokeSum = 0; // 실제로 친 타수 (오타 포함)
 
 // 장문 모드
-let passageChars = [];    // {ch, el}
-let passageCurIdx = 0;
-let passageCorrect = 0;
-let passageTotal = 0;
-
-let startTime = null, timerInterval = null, gameOver = false;
+let passageChars = [];  // [{ch, el}]
+let passageCursor = 0;
+let passageOkChars = 0;   // 맞게 친 글자 수
+let passageErrChars = 0;  // 오타 횟수
 
 const belt = document.getElementById('belt');
 
-// ── 모드 전환 ──
+// ════════════════════════════
+//  모드 전환
+// ════════════════════════════
 function switchMode(m) {
     mode = m;
     document.getElementById('tab-word').classList.toggle('active', m === 'word');
     document.getElementById('tab-passage').classList.toggle('active', m === 'passage');
-    document.getElementById('display-area').style.display = m === 'word' ? '' : 'none';
-    document.getElementById('typing-input').style.display = m === 'word' ? '' : 'none';
-    document.getElementById('passage-area').style.display = m === 'passage' ? '' : 'none';
+    document.getElementById('display-area').style.display  = m === 'word'    ? '' : 'none';
+    document.getElementById('typing-input').style.display  = m === 'word'    ? '' : 'none';
+    document.getElementById('passage-area').style.display  = m === 'passage' ? '' : 'none';
     document.getElementById('passage-input').style.display = m === 'passage' ? '' : 'none';
     initGame();
 }
 
-// ── 단어 모드 ──
+// ════════════════════════════
+//  언어 전환
+// ════════════════════════════
+function toggleLang() {
+    lang = lang === 'ko' ? 'en' : 'ko';
+    document.getElementById('lang-label').textContent = lang === 'ko' ? '🇰🇷 한글' : '🇺🇸 English';
+    document.getElementById('btn-lang').textContent   = lang === 'ko' ? '🔁 영어로 전환' : '🔁 한글로 전환';
+    initGame();
+}
+
+// ════════════════════════════
+//  공통 초기화
+// ════════════════════════════
+function initGame() {
+    clearInterval(timerInterval);
+    gameOver = false; startTime = null;
+    totalKeystrokeSum = 0; correctWordCount = 0; wrongWordCount = 0;
+    document.getElementById('stat-wpm').textContent  = 0;
+    document.getElementById('stat-acc').textContent  = 100;
+    document.getElementById('stat-time').textContent = totalSeconds;
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('typing-input').disabled  = false;
+    document.getElementById('passage-input').disabled = false;
+    if (mode === 'word') {
+        initWordMode();
+    } else {
+        initPassageMode();
+    }
+    renderRecords();
+}
+
+// ════════════════════════════
+//  단어 모드 초기화
+// ════════════════════════════
 function refillQueue() {
-    const pool = [...WORDS[lang]].sort(() => Math.random() - 0.5);
-    wordQueue.push(...pool);
+    wordQueue.push(...[...WORDS[lang]].sort(() => Math.random() - 0.5));
 }
 function nextWord() {
     if (wordQueue.length < 10) refillQueue();
     return wordQueue.shift();
 }
-
 function appendWordToBelt() {
     const word = nextWord();
     const wi = wordBoundaries.length;
+    // 스페이스
     const sp = document.createElement('span');
-    sp.className = 'char';
-    sp.textContent = '\u00A0';
-    belt.appendChild(sp);
-    charList.push({ ch: ' ', el: sp, wi: -1 });
+    sp.className = 'char'; sp.textContent = '\u00A0';
+    belt.appendChild(sp); charList.push({ ch: ' ', el: sp, wi: -1 });
+    // 단어 글자들
     const start = charList.length;
     for (const ch of word) {
-        const span = document.createElement('span');
-        span.className = 'char';
-        span.textContent = ch;
-        belt.appendChild(span);
-        charList.push({ ch, el: span, wi });
+        const s = document.createElement('span');
+        s.className = 'char'; s.textContent = ch;
+        belt.appendChild(s); charList.push({ ch, el: s, wi });
     }
     wordBoundaries.push({ start, end: charList.length - 1, word });
 }
-
 function renderBelt() {
-    belt.innerHTML = '';
-    charList = [];
-    wordBoundaries = [];
-    curWordPtr = 0;
-    const firstWord = nextWord();
-    for (const ch of firstWord) {
-        const span = document.createElement('span');
-        span.className = 'char';
-        span.textContent = ch;
-        belt.appendChild(span);
-        charList.push({ ch, el: span, wi: 0 });
+    belt.innerHTML = ''; charList = []; wordBoundaries = []; curWordPtr = 0; wordQueue = [];
+    const fw = nextWord();
+    for (const ch of fw) {
+        const s = document.createElement('span');
+        s.className = 'char'; s.textContent = ch;
+        belt.appendChild(s); charList.push({ ch, el: s, wi: 0 });
     }
-    wordBoundaries.push({ start: 0, end: charList.length - 1, word: firstWord });
-    for (let wi = 1; wi < 15; wi++) appendWordToBelt();
-    highlightCurrentWord();
-    updateBeltPosition();
+    wordBoundaries.push({ start: 0, end: charList.length - 1, word: fw });
+    for (let i = 1; i < 15; i++) appendWordToBelt();
+    highlightCurrentWord(); updateBeltPosition();
 }
-
 function highlightCurrentWord() {
     if (curWordPtr >= wordBoundaries.length) return;
     const { start, end } = wordBoundaries[curWordPtr];
     for (let i = start; i <= end; i++) charList[i].el.classList.add('current');
 }
-
 function updateBeltPosition() {
     if (curWordPtr >= wordBoundaries.length) return;
     const { start, end } = wordBoundaries[curWordPtr];
-    const firstEl = charList[start].el;
-    const lastEl  = charList[end].el;
-    const wordLeft   = firstEl.offsetLeft;
-    const wordRight  = lastEl.offsetLeft + lastEl.offsetWidth;
-    const wordCenter = (wordLeft + wordRight) / 2;
-    belt.style.transform = `translateX(-${wordCenter}px)`;
+    const fe = charList[start].el, le = charList[end].el;
+    const center = (fe.offsetLeft + le.offsetLeft + le.offsetWidth) / 2;
+    belt.style.transform = `translateX(-${center}px)`;
+}
+function initWordMode() {
+    wordQueue = []; renderBelt();
+    const inp = document.getElementById('typing-input');
+    inp.value = ''; inp.classList.remove('ok-border','wrong-border'); inp.focus();
 }
 
-// ── 장문 모드 ──
-let passageIdx = 0;
-
-function renderPassage() {
-    const area = document.getElementById('passage-text');
+// ════════════════════════════
+//  장문 모드 초기화
+// ════════════════════════════
+function pickPassage() {
     const pool = PASSAGES[lang];
-    // 현재 passageIdx 사용하고 순환
-    const text = pool[passageIdx % pool.length];
-    area.innerHTML = '';
-    passageChars = [];
-    passageCurIdx = 0;
-    passageCorrect = 0;
-    passageTotal = 0;
-
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+function appendPassageText(text) {
+    const area = document.getElementById('passage-area');
     for (const ch of text) {
-        const span = document.createElement('span');
-        span.className = 'p-char';
-        span.textContent = ch;
-        area.appendChild(span);
-        passageChars.push({ ch, el: span });
+        const s = document.createElement('span');
+        s.className = 'p-char p-pending';
+        s.textContent = ch === ' ' ? '\u00A0' : ch;
+        area.appendChild(s);
+        passageChars.push({ ch, el: s });
     }
-    if (passageChars.length > 0) passageChars[0].el.classList.add('current');
+}
+function initPassageMode() {
+    passageCursor = 0; passageOkChars = 0; passageErrChars = 0;
+    passageChars = [];
+    document.getElementById('passage-area').innerHTML = '';
+    appendPassageText(pickPassage());
+    updatePassageCursor(0);
+    const inp = document.getElementById('passage-input');
+    inp.value = ''; inp.classList.remove('ok-border','wrong-border'); inp.focus();
+}
+function updatePassageCursor(idx) {
+    passageChars.forEach((c, i) => {
+        c.el.classList.remove('p-current');
+        if (i === idx) c.el.classList.add('p-current');
+    });
+    if (passageChars[idx]) passageChars[idx].el.scrollIntoView({ block: 'nearest' });
 }
 
-// ── 타수 계산 ──
-// 한글: 자소 타수 / 경과분 = 타/분
-// 영어: 글자수(공백포함) / 경과분 = 타/분 (CPM 기준 - 실제 사이트와 동일)
+// ════════════════════════════
+//  타수 / 정확도
+// ════════════════════════════
 function calcWPM(elapsedSec) {
     if (!elapsedSec || elapsedSec <= 0) return 0;
-    const minutes = elapsedSec / 60;
-    return Math.round(totalKeystrokeSum / minutes);
+    return Math.round(totalKeystrokeSum / (elapsedSec / 60));
 }
-
 function calcAcc() {
-    if (mode === 'passage') {
-        return passageTotal === 0 ? 100 : Math.round((passageCorrect / passageTotal) * 100);
-    }
-    const total = correctWordCount + wrongWordCount;
-    return total === 0 ? 100 : Math.round((correctWordCount / total) * 100);
-}
-
-// ── 초기화 ──
-function initGame() {
-    clearInterval(timerInterval);
-    gameOver = false; startTime = null;
-    correctWordCount = 0; wrongWordCount = 0;
-    totalKeystrokeSum = 0; totalTypedStrokeSum = 0;
-    passageCurIdx = 0; passageCorrect = 0; passageTotal = 0;
-    curWordPtr = 0; wordQueue = [];
-    document.getElementById('stat-wpm').textContent = 0;
-    document.getElementById('stat-acc').textContent = 100;
-    document.getElementById('stat-time').textContent = totalSeconds;
-    document.getElementById('overlay').classList.remove('show');
-
     if (mode === 'word') {
-        refillQueue();
-        renderBelt();
-        const input = document.getElementById('typing-input');
-        input.value = ''; input.disabled = false; input.focus();
+        const total = correctWordCount + wrongWordCount;
+        return total === 0 ? 100 : Math.round(correctWordCount / total * 100);
     } else {
-        renderPassage();
-        const input = document.getElementById('passage-input');
-        input.value = ''; input.disabled = false; input.focus();
+        const total = passageOkChars + passageErrChars;
+        return total === 0 ? 100 : Math.round(passageOkChars / total * 100);
     }
-    renderRecords();
+}
+function tickStats() {
+    if (!startTime) return;
+    const elapsed = (Date.now() - startTime) / 1000;
+    document.getElementById('stat-wpm').textContent = calcWPM(elapsed);
+    document.getElementById('stat-acc').textContent = calcAcc();
 }
 
-function startTimer() {
-    startTime = Date.now();
-    timerInterval = setInterval(() => {
-        const elapsed = (Date.now() - startTime) / 1000;
-        const timeLeft = Math.max(0, totalSeconds - elapsed);
-        document.getElementById('stat-time').textContent = Math.ceil(timeLeft);
-        document.getElementById('stat-wpm').textContent = calcWPM(elapsed);
-        document.getElementById('stat-acc').textContent = calcAcc();
-        if (timeLeft <= 0) endGame();
-    }, 200);
+// ════════════════════════════
+//  타이머
+// ════════════════════════════
+function maybeStart() {
+    if (!startTime && !gameOver) {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const left = Math.max(0, totalSeconds - elapsed);
+            document.getElementById('stat-time').textContent = Math.ceil(left);
+            tickStats();
+            if (left <= 0) endGame();
+        }, 200);
+    }
 }
-
 function endGame() {
-    clearInterval(timerInterval);
-    gameOver = true;
-    document.getElementById('typing-input').disabled = true;
+    clearInterval(timerInterval); gameOver = true;
+    document.getElementById('typing-input').disabled  = true;
     document.getElementById('passage-input').disabled = true;
     const elapsed = startTime ? (Date.now() - startTime) / 1000 : totalSeconds;
     const wpm = calcWPM(Math.min(elapsed, totalSeconds));
@@ -430,190 +441,172 @@ function endGame() {
     saveRecord(wpm, acc);
 }
 
-function restartGame() { initGame(); }
+// ════════════════════════════
+//  단어 모드 이벤트
+// ════════════════════════════
+const wordInp = document.getElementById('typing-input');
 
-// ── 단어 모드 입력 처리 ──
-const wordInput = document.getElementById('typing-input');
-wordInput.addEventListener('input', () => {
+wordInp.addEventListener('input', () => {
     if (gameOver) return;
-    if (!startTime && wordInput.value.length > 0) startTimer();
-});
-wordInput.addEventListener('keydown', (e) => {
-    if (gameOver) return;
-    if (e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault();
-        const typed = wordInput.value.trim();
-        if (typed.length === 0) return;
-        const { start, end, word } = wordBoundaries[curWordPtr];
-        const ok = typed === word;
-        for (let i = start; i <= end; i++) {
-            charList[i].el.classList.remove('current');
-            charList[i].el.classList.add(ok ? 'done-ok' : 'done-err');
-        }
-        if (ok) {
-            correctWordCount++;
-        } else {
-            wrongWordCount++;
-        }
-        // 실제 타자 사이트 기준: 맞힌 글자수 만큼 카운트 (오타 단어도 맞힌 글자는 인정)
-        // 단, 완전히 틀린 단어는 50% 감산 (패널티)
-        if (ok) {
-            const strokes = (lang === 'ko') ? koStrokeCount(word) : enStrokeCount(word);
-            totalKeystrokeSum += strokes + 1; // +1 = 스페이스
-        } else {
-            // 오타: 공통 글자 수만큼만 인정 (앞에서부터 맞은 글자)
-            let matchLen = 0;
-            for (let i = 0; i < Math.min(typed.length, word.length); i++) {
-                if (typed[i] === word[i]) matchLen++;
-                else break;
-            }
-            if (lang === 'ko') {
-                totalKeystrokeSum += koStrokeCount(word.slice(0, matchLen));
-            } else {
-                totalKeystrokeSum += matchLen;
-            }
-        }
-        curWordPtr++;
-        const remaining = wordBoundaries.length - curWordPtr;
-        if (remaining < 8) appendWordToBelt();
-        highlightCurrentWord();
-        updateBeltPosition();
-        wordInput.value = '';
+    if (wordInp.value.length > 0) maybeStart();
+    // 실시간 정오 표시
+    const typed = wordInp.value;
+    if (!typed || curWordPtr >= wordBoundaries.length) {
+        wordInp.classList.remove('ok-border','wrong-border'); return;
     }
-});
-
-// ── 장문 모드 입력 처리 ──
-const passInput = document.getElementById('passage-input');
-passInput.addEventListener('input', (e) => {
-    if (gameOver) return;
-    if (!startTime) startTimer();
-
-    const val = passInput.value;
-    if (val.length === 0) return;
-
-    // 마지막으로 입력된 글자 처리
-    const typedCh = val[val.length - 1];
-    const expected = passageChars[passageCurIdx];
-    if (!expected) return;
-
-    passageTotal++;
-    const correct = typedCh === expected.ch;
-    if (correct) {
-        passageCorrect++;
-        expected.el.classList.remove('current');
-        expected.el.classList.add('done-ok');
-        // 타수 누적
-        if (lang === 'ko') {
-            // 한글 자소 1타 단위로 증가 (글자 완성 시점에 카운트)
-            const code = expected.ch.charCodeAt(0);
-            if (code >= 0xAC00 && code <= 0xD7A3) {
-                const jongseong = (code - 0xAC00) % 28;
-                totalKeystrokeSum += jongseong > 0 ? 3 : 2;
-            } else {
-                totalKeystrokeSum += 1;
-            }
-        } else {
-            totalKeystrokeSum += 1; // 영어: 글자당 1타
-        }
-        passageCurIdx++;
-        if (passageCurIdx < passageChars.length) {
-            passageChars[passageCurIdx].el.classList.add('current');
-        } else {
-            // 장문 완성 → 다음 장문으로
-            passageIdx++;
-            setTimeout(() => {
-                renderPassage();
-                passInput.value = '';
-            }, 300);
-            return;
-        }
+    const { word } = wordBoundaries[curWordPtr];
+    if (word.startsWith(typed)) {
+        wordInp.classList.add('ok-border'); wordInp.classList.remove('wrong-border');
     } else {
-        expected.el.classList.remove('current');
-        expected.el.classList.add('done-err');
-        expected.el.classList.add('current');
+        wordInp.classList.add('wrong-border'); wordInp.classList.remove('ok-border');
     }
-
-    // 입력창은 항상 클리어 (한 글자씩 처리)
-    passInput.value = '';
 });
 
-passInput.addEventListener('keydown', (e) => {
+wordInp.addEventListener('keydown', (e) => {
     if (gameOver) return;
-    // 백스페이스: 이전 글자로
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    e.preventDefault();
+    const typed = wordInp.value.trim();
+    if (!typed) return;
+    const { start, end, word } = wordBoundaries[curWordPtr];
+    const ok = typed === word;
+    for (let i = start; i <= end; i++) {
+        charList[i].el.classList.remove('current');
+        charList[i].el.classList.add(ok ? 'done-ok' : 'done-err');
+    }
+    if (ok) {
+        correctWordCount++;
+        totalKeystrokeSum += wordStrokes(word) + 1; // +1 스페이스바
+    } else {
+        wrongWordCount++;
+    }
+    curWordPtr++;
+    if (wordBoundaries.length - curWordPtr < 8) appendWordToBelt();
+    highlightCurrentWord(); updateBeltPosition();
+    wordInp.value = ''; wordInp.classList.remove('ok-border','wrong-border');
+});
+
+// ════════════════════════════
+//  장문 모드 이벤트
+//  ■ 한글: compositionend에서 글자 확정 처리
+//  ■ 영타: input에서 즉시 처리
+//  ■ 백스페이스: keydown에서 한 칸 되돌리기
+// ════════════════════════════
+const passInp = document.getElementById('passage-input');
+let isComposing = false;
+
+passInp.addEventListener('compositionstart', () => { isComposing = true; });
+
+passInp.addEventListener('compositionend', (e) => {
+    isComposing = false;
+    if (gameOver) return;
+    const typed = e.data || passInp.value;
+    if (typed) { maybeStart(); processPassage(typed); }
+    // compositionend 직후 input 이벤트가 따라오므로 값을 미리 비움
+    setTimeout(() => { passInp.value = ''; }, 0);
+    passInp.value = '';
+});
+
+passInp.addEventListener('input', () => {
+    if (gameOver || isComposing) return;
+    const typed = passInp.value;
+    if (!typed) return;
+    maybeStart();
+    processPassage(typed);
+    passInp.value = '';
+});
+
+passInp.addEventListener('keydown', (e) => {
+    if (gameOver) return;
     if (e.key === 'Backspace') {
         e.preventDefault();
-        if (passageCurIdx > 0) {
-            const prev = passageChars[passageCurIdx];
-            if (prev) prev.el.classList.remove('current');
-            passageCurIdx--;
-            const cur = passageChars[passageCurIdx];
-            cur.el.classList.remove('done-ok', 'done-err');
-            cur.el.classList.add('current');
-            if (cur.el.classList.contains('done-ok')) {
-                totalKeystrokeSum = Math.max(0, totalKeystrokeSum - 1);
+        if (passageCursor > 0) {
+            // 현재 커서 위치 current 제거
+            if (passageCursor < passageChars.length) {
+                passageChars[passageCursor].el.classList.remove('p-current');
             }
+            passageCursor--;
+            const prev = passageChars[passageCursor];
+            const wasDoneOk = prev.el.classList.contains('p-done-ok');
+            if (wasDoneOk) {
+                passageOkChars = Math.max(0, passageOkChars - 1);
+                totalKeystrokeSum = Math.max(0, totalKeystrokeSum - charStrokes(prev.ch));
+            } else {
+                passageErrChars = Math.max(0, passageErrChars - 1);
+            }
+            prev.el.classList.remove('p-done-ok','p-done-err','p-current');
+            prev.el.classList.add('p-pending');
+            updatePassageCursor(passageCursor);
         }
-        passInput.value = '';
+        passInp.value = '';
     }
 });
 
-// ── 버튼 ──
+function processPassage(typed) {
+    for (const ch of typed) {
+        if (passageCursor >= passageChars.length) break;
+        const { ch: expected, el } = passageChars[passageCursor];
+        el.classList.remove('p-pending','p-current');
+        if (ch === expected) {
+            el.classList.add('p-done-ok');
+            passageOkChars++;
+            totalKeystrokeSum += charStrokes(expected); // 스페이스도 1타
+        } else {
+            el.classList.add('p-done-err');
+            passageErrChars++;
+        }
+        passageCursor++;
+    }
+    // 장문 끝 근처면 새 장문 추가
+    if (passageCursor >= passageChars.length - 20) {
+        appendPassageText('  ' + pickPassage());
+    }
+    updatePassageCursor(passageCursor);
+    tickStats();
+}
+
+// ════════════════════════════
+//  시간 버튼
+// ════════════════════════════
 document.querySelectorAll('.time-btn').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     totalSeconds = parseInt(btn.dataset.sec);
     initGame();
 }));
-document.getElementById('btn-restart').addEventListener('click', initGame);
-document.getElementById('btn-lang').addEventListener('click', () => {
-    lang = lang === 'ko' ? 'en' : 'ko';
-    document.getElementById('lang-label').textContent = lang === 'ko' ? '🇰🇷 한글' : '🇺🇸 영어';
-    document.getElementById('btn-lang').textContent = lang === 'ko' ? '🔁 영어로 전환' : '🔁 한글로 전환';
-    initGame();
-});
 
-// ── 기록 저장/불러오기 ──
+// ════════════════════════════
+//  기록
+// ════════════════════════════
 const RECORD_KEY = 'typing_records_v3';
-
 function saveRecord(wpm, acc) {
     const records = loadRecords();
-    records.push({
-        wpm, acc,
-        lang: lang === 'ko' ? '한글' : '영어',
-        mode: mode === 'word' ? '단어' : '장문',
-        duration: totalSeconds,
-        date: new Date().toLocaleString('ko-KR')
-    });
+    records.push({ wpm, acc, lang: lang === 'ko' ? '한글' : '영어', mode: mode === 'word' ? '단어' : '장문', duration: totalSeconds, date: new Date().toLocaleString('ko-KR') });
     if (records.length > 20) records.splice(0, records.length - 20);
     localStorage.setItem(RECORD_KEY, JSON.stringify(records));
     renderRecords();
 }
-
 function loadRecords() {
-    try { return JSON.parse(localStorage.getItem(RECORD_KEY) || '[]'); }
-    catch { return []; }
+    try { return JSON.parse(localStorage.getItem(RECORD_KEY) || '[]'); } catch { return []; }
 }
-
 function renderRecords() {
     const list = document.getElementById('records-list');
     const records = loadRecords().slice().reverse();
-    if (records.length === 0) {
-        list.innerHTML = '<div style="color:#aaa;padding:12px 0;">아직 기록이 없습니다. 연습을 시작해보세요!</div>';
-        return;
-    }
-    list.innerHTML = records.slice(0, 10).map((r, i) => `
+    if (!records.length) { list.innerHTML = '<div style="color:#aaa;padding:12px 0;">아직 기록이 없습니다. 연습을 시작해보세요!</div>'; return; }
+    list.innerHTML = records.slice(0,10).map((r,i) => `
         <div class="record-row">
-            <span class="rank">#${i + 1}</span>
+            <span class="rank">#${i+1}</span>
             <span class="rec-wpm">${r.wpm} 타/분</span>
             <span class="rec-acc">정확도 ${r.acc}%</span>
-            <span class="rec-time">${r.lang} · ${r.mode || '단어'} · ${r.duration}초</span>
+            <span class="rec-time">${r.lang} · ${r.mode||'단어'} · ${r.duration}초</span>
             <span class="rec-date">${r.date}</span>
-        </div>
-    `).join('');
+        </div>`).join('');
 }
 
-// ── 초기 실행 ──
-switchMode('word');
+// ════════════════════════════
+//  시작
+// ════════════════════════════
+initGame();
 </script>
 </body>
 </html>
