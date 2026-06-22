@@ -255,6 +255,7 @@ let passageChars = [];    // {ch, el}
 let passageCurIdx = 0;
 let passageCorrect = 0;
 let passageTotal = 0;
+let passageIdx = 0;
 
 let startTime = null, timerInterval = null, gameOver = false;
 
@@ -265,10 +266,10 @@ function switchMode(m) {
     mode = m;
     document.getElementById('tab-word').classList.toggle('active', m === 'word');
     document.getElementById('tab-passage').classList.toggle('active', m === 'passage');
-    document.getElementById('display-area').style.display = m === 'word' ? '' : 'none';
-    document.getElementById('typing-input').style.display = m === 'word' ? '' : 'none';
-    document.getElementById('passage-area').style.display = m === 'passage' ? '' : 'none';
-    document.getElementById('passage-input').style.display = m === 'passage' ? '' : 'none';
+    document.getElementById('display-area').style.display = m === 'word' ? 'block' : 'none';
+    document.getElementById('typing-input').style.display = m === 'word' ? 'block' : 'none';
+    document.getElementById('passage-area').style.display = m === 'passage' ? 'block' : 'none';
+    document.getElementById('passage-input').style.display = m === 'passage' ? 'block' : 'none';
     initGame();
 }
 
@@ -338,8 +339,6 @@ function updateBeltPosition() {
 }
 
 // ── 장문 모드 ──
-let passageIdx = 0;
-
 function renderPassage() {
     const area = document.getElementById('passage-text');
     const pool = PASSAGES[lang];
@@ -437,6 +436,25 @@ const wordInput = document.getElementById('typing-input');
 wordInput.addEventListener('input', () => {
     if (gameOver) return;
     if (!startTime && wordInput.value.length > 0) startTimer();
+
+    // 실시간 글자 색상 피드백
+    if (curWordPtr >= wordBoundaries.length) return;
+    const { start, end, word } = wordBoundaries[curWordPtr];
+    const typed = wordInput.value;
+
+    for (let i = 0; i < word.length; i++) {
+        const el = charList[start + i].el;
+        el.classList.remove('current', 'done-ok', 'done-err');
+        if (i < typed.length) {
+            el.classList.add(typed[i] === word[i] ? 'done-ok' : 'done-err');
+        } else if (i === typed.length) {
+            el.classList.add('current');
+        }
+    }
+    // 입력이 없으면 첫 글자를 current로
+    if (typed.length === 0) {
+        charList[start].el.classList.add('current');
+    }
 });
 wordInput.addEventListener('keydown', (e) => {
     if (gameOver) return;
