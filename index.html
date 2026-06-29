@@ -64,27 +64,46 @@
         }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-        /* 장문 모드 디스플레이 */
+        /* 장문 모드 디스플레이 - 벨트 스타일 */
         #passage-area {
             display: none;
-            width: 100%; max-width: 900px;
+            width: 100%; max-width: 900px; height: 130px;
             background: white; border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            padding: 24px 32px;
             margin-bottom: 20px;
-            line-height: 2.0;
-            font-size: 22px;
-            min-height: 130px;
-            position: relative;
-            overflow: hidden;
+            overflow: hidden; position: relative;
         }
-        #passage-text { color: #ccc; word-break: break-all; position: relative; }
-        .p-char { position: relative; }
+        #passage-area::before {
+            content: ''; position: absolute;
+            left: 50%; top: 15%; bottom: 15%;
+            width: 3px; margin-left: -1.5px;
+            background: rgba(91,78,240,0.15);
+            border-radius: 2px; z-index: 1;
+            pointer-events: none;
+        }
+        #passage-area::after {
+            content: ''; position: absolute;
+            inset: 0; pointer-events: none; z-index: 2;
+            background: linear-gradient(to right,
+                white 0%, transparent 18%,
+                transparent 82%, white 100%);
+        }
+        #passage-belt {
+            display: flex; align-items: center; height: 100%;
+            position: absolute; left: 50%;
+            white-space: nowrap;
+            transition: transform 0.12s ease-out;
+        }
+        .p-char {
+            font-size: 54px; font-weight: bold; color: #bbb;
+            min-width: 0.55em; text-align: center;
+            transition: color 0.08s; letter-spacing: 0.04em;
+        }
         .p-char.done-ok  { color: var(--correct); }
-        .p-char.done-err { color: var(--wrong); background: #fff0f0; border-radius: 2px; }
+        .p-char.done-err { color: var(--wrong); }
         .p-char.current  { color: #111; }
         .p-char.current::after {
-            content: ''; display: block; height: 3px;
+            content: ''; display: block; height: 4px;
             background: var(--accent); border-radius: 2px;
             animation: blink 0.8s infinite;
         }
@@ -104,12 +123,12 @@
 
         /* 장문 모드 입력란 */
         #passage-input {
-            display: none;
             width: 100%; max-width: 900px; height: 80px;
             font-size: 30px;
             padding: 10px 20px;
             border: 3px solid var(--accent); border-radius: 15px;
             text-align: left; outline: none; font-family: inherit;
+            caret-color: var(--accent);
         }
         #passage-input:focus { box-shadow: 0 0 0 3px rgba(91,78,240,0.25); }
 
@@ -167,8 +186,8 @@
 <input type="text" id="typing-input" autocomplete="off" spellcheck="false" placeholder="">
 
 <!-- 장문 모드 -->
-<div id="passage-area"><div id="passage-text"></div></div>
-<input type="text" id="passage-input" autocomplete="off" spellcheck="false" placeholder="">
+<div id="passage-area"><div id="passage-belt"></div></div>
+<input type="text" id="passage-input" autocomplete="off" spellcheck="false" placeholder="" style="display:none">
 
 <div class="btns">
     <button id="btn-restart">🔄 다시 시작</button>
@@ -338,13 +357,12 @@ function updateBeltPosition() {
     belt.style.transform = `translateX(-${wordCenter}px)`;
 }
 
-// ── 장문 모드 ──
+// ── 장문 모드 (벨트 방식) ──
 function renderPassage() {
-    const area = document.getElementById('passage-text');
+    const belt = document.getElementById('passage-belt');
     const pool = PASSAGES[lang];
-    // 현재 passageIdx 사용하고 순환
     const text = pool[passageIdx % pool.length];
-    area.innerHTML = '';
+    belt.innerHTML = '';
     passageChars = [];
     passageCurIdx = 0;
     passageCorrect = 0;
@@ -354,10 +372,20 @@ function renderPassage() {
         const span = document.createElement('span');
         span.className = 'p-char';
         span.textContent = ch;
-        area.appendChild(span);
+        span.dataset.ch = ch;
+        belt.appendChild(span);
         passageChars.push({ ch, el: span });
     }
     if (passageChars.length > 0) passageChars[0].el.classList.add('current');
+    requestAnimationFrame(() => requestAnimationFrame(() => updatePassageBeltPosition()));
+}
+
+function updatePassageBeltPosition() {
+    const belt = document.getElementById('passage-belt');
+    if (!passageChars[passageCurIdx]) return;
+    const el = passageChars[passageCurIdx].el;
+    const center = el.offsetLeft + el.offsetWidth / 2;
+    belt.style.transform = `translateX(-${center}px)`;
 }
 
 // ── 타수 계산 ──
@@ -502,15 +530,77 @@ wordInput.addEventListener('keydown', (e) => {
 
 // ── 장문 모드 입력 처리 ──
 const passInput = document.getElementById('passage-input');
+let isComposing = false;
+let lastInputLen = 0; // 이전 input 길이 추적
+
+passInput.addEventListener('compositionstart', () => { isComposing = true; });
+passInput.addEventListener('compositionend', (e) => {
+    isComposing = false;
+    // 한타: 조합 완료된 글자 처리
+    const val = passInput.value;
+    if (val.length === 0) return;
+    const typedCh = val[val.length - 1];
+    processPassageChar(typedCh);
+    lastInputLen = passInput.value.length;
+});
+
+passInput.addEventListener('keydown', (e) => {
+    if (gameOver) return;
+
+    // 백스페이스
+    if (e.key === 'Backspace') {
+        e.preventDefault();
+        if (passageCurIdx > 0) {
+            const cur = passageChars[passageCurIdx];
+            if (cur) cur.el.classList.remove('current');
+            passageCurIdx--;
+            const prev = passageChars[passageCurIdx];
+            const wasOk = prev.el.classList.contains('done-ok');
+            prev.el.classList.remove('done-ok', 'done-err');
+            prev.el.classList.add('current');
+            if (wasOk) totalKeystrokeSum = Math.max(0, totalKeystrokeSum - 1);
+            updatePassageBeltPosition();
+            // input value에서도 마지막 글자 제거
+            passInput.value = passInput.value.slice(0, -1);
+            lastInputLen = passInput.value.length;
+        }
+        return;
+    }
+
+    // 스페이스: input 비우기
+    if (e.key === ' ') {
+        if (isComposing) return;
+        e.preventDefault();
+        processPassageChar(' ');
+        passInput.value = '';
+        lastInputLen = 0;
+        return;
+    }
+});
+
 passInput.addEventListener('input', (e) => {
+    if (gameOver) return;
+    if (isComposing) return; // 한타 조합 중엔 compositionend에서 처리
+
+    const val = passInput.value;
+    // 글자가 늘었을 때만 처리 (백스페이스 등 제외)
+    if (val.length > lastInputLen) {
+        const typedCh = val[val.length - 1];
+        if (typedCh === ' ') {
+            // 스페이스는 keydown에서 처리되므로 여기선 무시
+            passInput.value = val.slice(0, -1);
+            lastInputLen = passInput.value.length;
+            return;
+        }
+        processPassageChar(typedCh);
+    }
+    lastInputLen = passInput.value.length;
+});
+
+function processPassageChar(typedCh) {
     if (gameOver) return;
     if (!startTime) startTimer();
 
-    const val = passInput.value;
-    if (val.length === 0) return;
-
-    // 마지막으로 입력된 글자 처리
-    const typedCh = val[val.length - 1];
     const expected = passageChars[passageCurIdx];
     if (!expected) return;
 
@@ -518,11 +608,9 @@ passInput.addEventListener('input', (e) => {
     const correct = typedCh === expected.ch;
     if (correct) {
         passageCorrect++;
-        expected.el.classList.remove('current');
+        expected.el.classList.remove('current', 'done-err');
         expected.el.classList.add('done-ok');
-        // 타수 누적
         if (lang === 'ko') {
-            // 한글 자소 1타 단위로 증가 (글자 완성 시점에 카운트)
             const code = expected.ch.charCodeAt(0);
             if (code >= 0xAC00 && code <= 0xD7A3) {
                 const jongseong = (code - 0xAC00) % 28;
@@ -531,49 +619,21 @@ passInput.addEventListener('input', (e) => {
                 totalKeystrokeSum += 1;
             }
         } else {
-            totalKeystrokeSum += 1; // 영어: 글자당 1타
+            totalKeystrokeSum += 1;
         }
         passageCurIdx++;
         if (passageCurIdx < passageChars.length) {
             passageChars[passageCurIdx].el.classList.add('current');
+            updatePassageBeltPosition();
         } else {
-            // 장문 완성 → 다음 장문으로
             passageIdx++;
-            setTimeout(() => {
-                renderPassage();
-                passInput.value = '';
-            }, 300);
-            return;
+            setTimeout(() => { renderPassage(); }, 300);
         }
     } else {
         expected.el.classList.remove('current');
-        expected.el.classList.add('done-err');
-        expected.el.classList.add('current');
+        expected.el.classList.add('done-err', 'current');
     }
-
-    // 입력창은 항상 클리어 (한 글자씩 처리)
-    passInput.value = '';
-});
-
-passInput.addEventListener('keydown', (e) => {
-    if (gameOver) return;
-    // 백스페이스: 이전 글자로
-    if (e.key === 'Backspace') {
-        e.preventDefault();
-        if (passageCurIdx > 0) {
-            const prev = passageChars[passageCurIdx];
-            if (prev) prev.el.classList.remove('current');
-            passageCurIdx--;
-            const cur = passageChars[passageCurIdx];
-            cur.el.classList.remove('done-ok', 'done-err');
-            cur.el.classList.add('current');
-            if (cur.el.classList.contains('done-ok')) {
-                totalKeystrokeSum = Math.max(0, totalKeystrokeSum - 1);
-            }
-        }
-        passInput.value = '';
-    }
-});
+}
 
 // ── 버튼 ──
 document.querySelectorAll('.time-btn').forEach(btn => btn.addEventListener('click', () => {
