@@ -384,6 +384,11 @@ wordInput.addEventListener('input', () => {
 
 wordInput.addEventListener('keydown', (e) => {
     if (gameOver) return;
+    // 백스페이스로 현재 단어 첫 글자에서 이전 단어로 못 넘어가게 막기
+    if (e.key === 'Backspace' && wordInput.value.length === 0) {
+        e.preventDefault();
+        return;
+    }
     if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         const typed = wordInput.value.trim();
