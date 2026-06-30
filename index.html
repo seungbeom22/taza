@@ -100,6 +100,42 @@
         .res-num { font-size: 64px; font-weight: bold; color: var(--accent); line-height: 1.1; }
         .res-acc { font-size: 26px; font-weight: bold; color: #22c55e; }
         #result-box button { margin-top: 26px; padding: 14px 40px; font-size: 20px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
+
+        /* 목표 분석 패널 */
+        #goal-panel { width: 100%; max-width: 900px; margin-top: 30px; background: white; border-radius: 14px; padding: 18px 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        #goal-panel h2 { margin-bottom: 12px; color: #444; font-size: 20px; }
+        .goal-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .goal-form input[type="date"], .goal-form input[type="number"] {
+            padding: 10px 12px; font-size: 16px; border: 2px solid var(--accent); border-radius: 8px; outline: none; font-family: inherit;
+        }
+        .goal-form input[type="number"] { width: 110px; }
+        .goal-form button { padding: 10px 22px; font-size: 16px; font-weight: bold; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .goal-form label { font-size: 14px; color: #666; }
+
+        /* 목표 분석 모달 */
+        #goal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; z-index: 20; padding: 20px; }
+        #goal-overlay.show { display: flex; }
+        #goal-box { background: white; border-radius: 24px; padding: 32px 36px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
+        #goal-box h2 { font-size: 22px; margin-bottom: 6px; color: #333; text-align: center; }
+        .goal-date-sub { text-align: center; color: #999; font-size: 14px; margin-bottom: 18px; }
+        .goal-summary { display: flex; justify-content: space-around; background: var(--bg); border-radius: 14px; padding: 18px 8px; margin-bottom: 20px; }
+        .goal-summary .gs-item { text-align: center; }
+        .goal-summary .gs-num { font-size: 26px; font-weight: bold; color: var(--accent); }
+        .goal-summary .gs-num.gs-ok { color: var(--correct); }
+        .goal-summary .gs-num.gs-fail { color: var(--wrong); }
+        .goal-summary .gs-label { font-size: 13px; color: #777; margin-top: 4px; }
+        .goal-detail-title { font-size: 15px; color: #555; font-weight: bold; margin-bottom: 8px; }
+        .goal-detail-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+        .goal-detail-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: #f7f8fd; font-size: 14px; }
+        .goal-detail-row.ok { border-left: 4px solid var(--correct); }
+        .goal-detail-row.fail { border-left: 4px solid var(--wrong); }
+        .goal-detail-row .gd-tag { font-weight: bold; font-size: 13px; }
+        .goal-detail-row.ok .gd-tag { color: var(--correct); }
+        .goal-detail-row.fail .gd-tag { color: var(--wrong); }
+        .goal-detail-row .gd-wpm { font-weight: bold; color: #222; }
+        .goal-detail-row .gd-meta { color: #888; font-size: 13px; margin-left: auto; text-align: right; }
+        .goal-empty { text-align: center; color: #aaa; padding: 30px 0; }
+        #goal-box button.close-btn { display: block; margin: 22px auto 0; padding: 12px 36px; font-size: 17px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -133,9 +169,30 @@
     <button id="btn-restart">🔄 다시 시작</button>
     <button id="btn-lang">🔁 한글로 전환</button>
 </div>
+<div id="goal-panel">
+    <h2>🎯 목표 타수 분석</h2>
+    <div class="goal-form">
+        <label>날짜</label>
+        <input type="date" id="goal-date">
+        <label>목표 타수</label>
+        <input type="number" id="goal-target" placeholder="예: 156" min="0">
+        <button id="btn-goal-check">분석하기</button>
+    </div>
+    <div id="goal-warn" style="color:var(--wrong); font-size:14px; margin-top:8px; display:none;"></div>
+</div>
 <div id="records-panel">
     <h2>📊 최근 기록 (자동 저장)</h2>
     <div id="records-list"></div>
+</div>
+<div id="goal-overlay">
+    <div id="goal-box">
+        <h2>🎯 목표 달성 분석</h2>
+        <div class="goal-date-sub" id="goal-date-sub"></div>
+        <div class="goal-summary" id="goal-summary"></div>
+        <div class="goal-detail-title">세부 기록</div>
+        <div class="goal-detail-list" id="goal-detail-list"></div>
+        <button class="close-btn" onclick="closeGoalModal()">닫기</button>
+    </div>
 </div>
 <div id="overlay">
     <div id="result-box">
@@ -442,6 +499,12 @@ document.getElementById('btn-lang').addEventListener('click', () => {
 // ── 기록 저장/불러오기 ──
 const RECORD_KEY = 'typing_records_v3';
 
+function todayKey() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function saveRecord(wpm, acc) {
     const records = loadRecords();
     records.push({
@@ -449,9 +512,10 @@ function saveRecord(wpm, acc) {
         lang: lang === 'ko' ? '한글' : '영어',
         mode: mode === 'word' ? '단어' : '장문',
         duration: totalSeconds,
+        dateKey: todayKey(),
         date: new Date().toLocaleString('ko-KR')
     });
-    if (records.length > 20) records.splice(0, records.length - 20);
+    if (records.length > 500) records.splice(0, records.length - 500);
     localStorage.setItem(RECORD_KEY, JSON.stringify(records));
     renderRecords();
 }
@@ -481,6 +545,63 @@ function renderRecords() {
 
 // ── 초기 실행 ──
 switchMode('word');
+document.getElementById('goal-date').value = todayKey();
+
+// ── 목표 타수 분석 ──
+function closeGoalModal() {
+    document.getElementById('goal-overlay').classList.remove('show');
+}
+
+document.getElementById('btn-goal-check').addEventListener('click', () => {
+    const warnEl = document.getElementById('goal-warn');
+    warnEl.style.display = 'none';
+    const dateKey = document.getElementById('goal-date').value;
+    const targetRaw = document.getElementById('goal-target').value;
+    if (!dateKey) { warnEl.textContent = '날짜를 선택해주세요.'; warnEl.style.display = 'block'; return; }
+    if (targetRaw === '' || isNaN(targetRaw)) { warnEl.textContent = '목표 타수를 입력해주세요.'; warnEl.style.display = 'block'; return; }
+    const target = Number(targetRaw);
+
+    const all = loadRecords();
+    const dayRecords = all.filter(r => {
+        if (r.dateKey) return r.dateKey === dateKey;
+        // 구버전 기록: "2026. 6. 29. 오후 5:27:51" 형식에서 날짜 추출
+        const m = (r.date || '').match(/^(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\./);
+        if (!m) return false;
+        const pad = n => String(n).padStart(2, '0');
+        const key = `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+        return key === dateKey;
+    });
+
+    const total = dayRecords.length;
+    const matched = dayRecords.filter(r => r.wpm === target);
+    const success = matched.length;
+    const fail = total - success;
+
+    document.getElementById('goal-date-sub').textContent = `${dateKey} · 목표 ${target}타`;
+    document.getElementById('goal-summary').innerHTML = `
+        <div class="gs-item"><div class="gs-num">${total}</div><div class="gs-label">도전</div></div>
+        <div class="gs-item"><div class="gs-num gs-ok">${success}</div><div class="gs-label">성공</div></div>
+        <div class="gs-item"><div class="gs-num gs-fail">${fail}</div><div class="gs-label">실패</div></div>
+    `;
+
+    const listEl = document.getElementById('goal-detail-list');
+    if (matched.length === 0) {
+        listEl.innerHTML = '<div class="goal-empty">해당 날짜에 그 타수로 기록한 내역이 없습니다.</div>';
+    } else {
+        listEl.innerHTML = matched.slice().reverse().map(r => {
+            const timeLabel = r.duration === 60 ? '1분' : r.duration === 180 ? '3분' : r.duration === 300 ? '5분' : `${r.duration}초`;
+            return `
+                <div class="goal-detail-row ok">
+                    <span class="gd-tag">성공</span>
+                    <span class="gd-wpm">${r.wpm}타</span>
+                    <span class="gd-meta">${timeLabel} · ${r.mode || '단어'} · ${r.lang} · 정확도 ${r.acc}%</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    document.getElementById('goal-overlay').classList.add('show');
+});
 </script>
 </body>
 </html>
