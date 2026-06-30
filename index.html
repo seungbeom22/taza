@@ -573,8 +573,7 @@ document.getElementById('btn-goal-check').addEventListener('click', () => {
     });
 
     const total = dayRecords.length;
-    const matched = dayRecords.filter(r => r.wpm === target);
-    const success = matched.length;
+    const success = dayRecords.filter(r => r.wpm >= target).length;
     const fail = total - success;
 
     document.getElementById('goal-date-sub').textContent = `${dateKey} · 목표 ${target}타`;
@@ -585,14 +584,15 @@ document.getElementById('btn-goal-check').addEventListener('click', () => {
     `;
 
     const listEl = document.getElementById('goal-detail-list');
-    if (matched.length === 0) {
-        listEl.innerHTML = '<div class="goal-empty">해당 날짜에 그 타수로 기록한 내역이 없습니다.</div>';
+    if (total === 0) {
+        listEl.innerHTML = '<div class="goal-empty">해당 날짜의 기록이 없습니다.</div>';
     } else {
-        listEl.innerHTML = matched.slice().reverse().map(r => {
+        listEl.innerHTML = dayRecords.slice().reverse().map(r => {
+            const ok = r.wpm >= target;
             const timeLabel = r.duration === 60 ? '1분' : r.duration === 180 ? '3분' : r.duration === 300 ? '5분' : `${r.duration}초`;
             return `
-                <div class="goal-detail-row ok">
-                    <span class="gd-tag">성공</span>
+                <div class="goal-detail-row ${ok ? 'ok' : 'fail'}">
+                    <span class="gd-tag">${ok ? '성공' : '실패'}</span>
                     <span class="gd-wpm">${r.wpm}타</span>
                     <span class="gd-meta">${timeLabel} · ${r.mode || '단어'} · ${r.lang} · 정확도 ${r.acc}%</span>
                 </div>
